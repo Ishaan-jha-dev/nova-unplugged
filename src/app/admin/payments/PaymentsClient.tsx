@@ -61,6 +61,22 @@ export function PaymentsClient({ submissions, adminId }: { submissions: any[]; a
     })
   }
 
+  const handleViewScreenshot = async (path: string) => {
+    try {
+      const supabase = createClient()
+      const { data, error: supaErr } = await supabase.storage.from('payment-screenshots').createSignedUrl(path, 60 * 60) // 1 hour valid
+      if (supaErr) {
+        setError('Could not load screenshot: ' + supaErr.message)
+        return
+      }
+      if (data?.signedUrl) {
+        window.open(data.signedUrl, '_blank')
+      }
+    } catch (err: any) {
+      setError('Failed to open screenshot')
+    }
+  }
+
   const filters: { key: Filter; label: string }[] = [
     { key: 'all',      label: `All (${counts.all})` },
     { key: 'pending',  label: `Pending (${counts.pending})` },
@@ -115,15 +131,13 @@ export function PaymentsClient({ submissions, adminId }: { submissions: any[]; a
                   <td className="px-5 py-4">
                     <div className="flex items-center justify-end gap-2">
                       {p.screenshot_url && (
-                        <a
-                          href={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/authenticated/payment-screenshots/${p.screenshot_url}`}
-                          target="_blank"
-                          rel="noreferrer"
+                        <button
+                          onClick={() => handleViewScreenshot(p.screenshot_url)}
                           className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-nova-muted hover:text-nova-text transition-all"
                           title="View screenshot"
                         >
                           <Eye size={15} />
-                        </a>
+                        </button>
                       )}
                       {p.status === 'pending' && (
                         <>
