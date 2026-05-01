@@ -322,7 +322,7 @@ export default function RegisterPage() {
               Verify Your Email
             </h2>
             <p className="text-nova-muted text-sm text-center mb-6">
-              We've sent a 6-digit code to <strong>{form.email}</strong>
+              We&apos;ve sent a 6-digit code to <strong>{form.email}</strong>
             </p>
             {error && (
               <div className="mb-6 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm flex items-center gap-2">
