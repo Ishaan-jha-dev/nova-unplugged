@@ -225,3 +225,18 @@ CREATE POLICY "Users can view own profile" ON public.users FOR SELECT USING (aut
 
 DROP POLICY IF EXISTS "Admins can view all profiles" ON public.users;
 CREATE POLICY "Admins can view all profiles" ON public.users FOR SELECT USING (public.get_my_role_level() >= 4);
+
+-- Payment Submissions RLS
+ALTER TABLE public.payment_submissions ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can insert own payment" ON public.payment_submissions;
+CREATE POLICY "Users can insert own payment" ON public.payment_submissions FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can view own payment" ON public.payment_submissions;
+CREATE POLICY "Users can view own payment" ON public.payment_submissions FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Admins can view all payments" ON public.payment_submissions;
+CREATE POLICY "Admins can view all payments" ON public.payment_submissions FOR SELECT USING (public.get_my_role_level() >= 4);
+
+DROP POLICY IF EXISTS "Admins can update payments" ON public.payment_submissions;
+CREATE POLICY "Admins can update payments" ON public.payment_submissions FOR UPDATE USING (public.get_my_role_level() >= 4);
