@@ -213,8 +213,10 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS trg_new_user ON auth.users;
 CREATE TRIGGER trg_new_user
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+  AFTER INSERT OR UPDATE ON auth.users
+  FOR EACH ROW 
+  WHEN (NEW.email_confirmed_at IS NOT NULL)
+  EXECUTE FUNCTION public.handle_new_user();
 
 -- RLS
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
