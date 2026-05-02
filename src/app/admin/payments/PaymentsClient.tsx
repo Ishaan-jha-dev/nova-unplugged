@@ -60,7 +60,7 @@ const ACTION_CONFIG: Record<ActionType, {
   },
 }
 
-export function PaymentsClient({ submissions }: { submissions: any[] }) {
+export function PaymentsClient({ submissions, adminId }: { submissions: any[]; adminId: string }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [filter, setFilter] = useState<FilterKey>('pending')
