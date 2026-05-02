@@ -8,7 +8,7 @@ import { Input, Textarea, Select } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { CategoryBadge, ParticipationBadge } from '@/components/ui/Badge'
 import { createClient } from '@/lib/supabase/client'
-import { format } from 'date-fns'
+import { formatIST } from '@/lib/utils/dateUtils'
 import type { EventRow, EventCategory, ParticipationType } from '@/lib/supabase/types'
 
 const categoryOptions = [
@@ -193,7 +193,7 @@ export function AdminEventsClient({ events, creatorId }: { events: EventRow[]; c
               <h3 className="font-display font-semibold text-nova-text mb-1 truncate">{event.title}</h3>
               <div className="flex flex-col gap-1 text-xs text-nova-muted mb-4">
                 {event.venue && <span className="flex items-center gap-1"><MapPin size={10} />{event.venue}</span>}
-                {event.start_time && <span className="flex items-center gap-1"><Calendar size={10} />{format(new Date(event.start_time), 'MMM d, h:mm a')}</span>}
+                {event.start_time && <span className="flex items-center gap-1"><Calendar size={10} />{formatIST(event.start_time, 'MMM d, h:mm a')}</span>}
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" icon={<Pencil size={13} />} onClick={() => openEdit(event)}>Edit</Button>

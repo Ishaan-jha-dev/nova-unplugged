@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { format } from 'date-fns'
+import { formatIST } from '@/lib/utils/dateUtils'
 import { Calendar, Users, QrCode, Bell, ArrowRight, Zap, Star } from 'lucide-react'
 import { PaymentBadge } from '@/components/ui/Badge'
 import { CategoryBadge } from '@/components/ui/Badge'
@@ -108,7 +108,7 @@ export default async function DashboardPage() {
                     <div className="flex-1 min-w-0">
                       <p className="text-nova-text font-medium text-sm truncate">{ev?.title}</p>
                       <p className="text-nova-muted text-xs mt-0.5">
-                        {ev?.start_time ? format(new Date(ev.start_time), 'MMM d, h:mm a') : 'Date TBD'}
+                        {ev?.start_time ? formatIST(ev.start_time, 'MMM d, h:mm a') : 'Date TBD'}
                       </p>
                     </div>
                     {ev?.category && <CategoryBadge category={ev.category} />}
@@ -166,7 +166,7 @@ export default async function DashboardPage() {
                   <div key={a.id} className="p-3 rounded-xl bg-white/3 border border-white/5">
                     <p className="text-nova-text text-sm font-medium">{a.title}</p>
                     <p className="text-nova-muted text-xs mt-1 line-clamp-2">{a.body}</p>
-                    <p className="text-nova-muted text-xs mt-1.5">{format(new Date(a.created_at), 'MMM d, h:mm a')}</p>
+                    <p className="text-nova-muted text-xs mt-1.5">{formatIST(a.created_at, 'MMM d, h:mm a')}</p>
                   </div>
                 ))}
               </div>

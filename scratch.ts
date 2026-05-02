@@ -8,10 +8,10 @@ const supabase = createClient(
 )
 
 async function test() {
-  const { data, error } = await supabase.from('payment_submissions').select('*, user:users!user_id(full_name)').limit(1)
-  console.log("PAYMENTS:", error || data)
+  const { data: d1, error: e1 } = await supabase.from('registrations').select('*, events(title, category, start_time, participation_type)').limit(1)
+  console.log("REG:", e1 || d1)
 
-  const { data: d2, error: e2 } = await supabase.from('scanner_log').select('*, scanned_by_user:users!scanned_by(full_name)').limit(1)
-  console.log("SCANNER:", e2 || d2)
+  const { data: d2, error: e2 } = await supabase.from('announcements').select('*, users(full_name)').limit(1)
+  console.log("ANN:", e2 || d2)
 }
 test()

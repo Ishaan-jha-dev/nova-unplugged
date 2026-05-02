@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { format } from 'date-fns'
+import { formatIST } from '@/lib/utils/dateUtils'
 import {
   Search, MapPin, Clock, User, Users, Phone, Mail,
   ExternalLink, BookOpen, Check, Plus, LogIn, X
@@ -250,7 +250,7 @@ export function EventsClient({ events, registeredEventIds, userId }: EventsClien
                       <span className="flex items-center gap-1.5"><MapPin size={11} />{event.venue}</span>
                     )}
                     {event.start_time && (
-                      <span className="flex items-center gap-1.5"><Clock size={11} />{format(new Date(event.start_time), 'MMM d, h:mm a')}</span>
+                      <span className="flex items-center gap-1.5"><Clock size={11} />{formatIST(event.start_time, 'MMM d, h:mm a')}</span>
                     )}
                     {event.organizer_name && (
                       <span className="flex items-center gap-1.5"><User size={11} />{event.organizer_name}</span>
@@ -311,7 +311,7 @@ export function EventsClient({ events, registeredEventIds, userId }: EventsClien
               {selectedEvent.start_time && (
                 <div className="flex items-center gap-2 text-sm text-nova-text-dim">
                   <Clock size={14} className="text-nova-primary shrink-0" />
-                  {format(new Date(selectedEvent.start_time), 'PPp')}
+                  {formatIST(selectedEvent.start_time, 'PPp')}
                 </div>
               )}
               {selectedEvent.organizer_name && (

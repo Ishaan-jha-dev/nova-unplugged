@@ -2,10 +2,10 @@
 
 import { useState, useTransition, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { format } from 'date-fns'
 import { Search } from 'lucide-react'
 import { PaymentBadge, EntryBadge, RoleBadge } from '@/components/ui/Badge'
 import { createClient } from '@/lib/supabase/client'
+import { formatIST } from '@/lib/utils/dateUtils'
 
 export function AdminUsersClient({ users, roles, types, myLevel }: { users: any[]; roles: any[]; types: any[]; myLevel: number }) {
   const router = useRouter()
@@ -168,7 +168,7 @@ export function AdminUsersClient({ users, roles, types, myLevel }: { users: any[
                       </select>
                     </td>
                   )}
-                  <td className="px-5 py-3 text-nova-muted text-xs hidden xl:table-cell">{format(new Date(u.created_at), 'MMM d')}</td>
+                  <td className="px-5 py-3 text-nova-muted text-xs hidden xl:table-cell">{formatIST(u.created_at, 'MMM d')}</td>
                 </tr>
               ))}
               {filtered.length === 0 && (

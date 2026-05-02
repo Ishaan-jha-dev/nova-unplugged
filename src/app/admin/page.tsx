@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Users, CreditCard, QrCode, Calendar, Clock } from 'lucide-react'
-import { format } from 'date-fns'
+import { formatIST } from '@/lib/utils/dateUtils'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = { title: 'Admin Dashboard | Nova Unplugged' }
@@ -74,7 +74,7 @@ export default async function AdminDashboard() {
     <div className="p-6 lg:p-8">
       <div className="mb-8">
         <h1 className="font-display font-bold text-3xl text-nova-text mb-1">Admin Dashboard</h1>
-        <p className="text-nova-text-dim text-sm">Nova Unplugged 2025 · {format(new Date(), 'EEEE, MMMM d')}</p>
+        <p className="text-nova-text-dim text-sm">Nova Unplugged 2025 · {formatIST(new Date(), 'EEEE, MMMM d')}</p>
       </div>
 
       {/* KPI grid */}
@@ -111,7 +111,7 @@ export default async function AdminDashboard() {
                 </div>
                 <div className="flex items-center gap-3 shrink-0 ml-3">
                   <span className={statusColors[p.status]}>{p.status}</span>
-                  <span className="text-nova-muted text-xs">{format(new Date(p.created_at), 'MMM d')}</span>
+                  <span className="text-nova-muted text-xs">{formatIST(p.created_at, 'MMM d')}</span>
                 </div>
               </div>
             ))}
@@ -138,7 +138,7 @@ export default async function AdminDashboard() {
                     <p className="text-nova-muted text-xs">by {(s.users as any)?.full_name}</p>
                   </div>
                 </div>
-                <span className="text-nova-muted text-xs flex items-center gap-1"><Clock size={11} />{format(new Date(s.scanned_at), 'h:mm a')}</span>
+                <span className="text-nova-muted text-xs flex items-center gap-1"><Clock size={11} />{formatIST(s.scanned_at, 'h:mm a')}</span>
               </div>
             ))}
             {!recentScans?.length && (

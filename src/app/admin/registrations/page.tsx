@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { format } from 'date-fns'
+import { formatIST } from '@/lib/utils/dateUtils'
 import { CategoryBadge, ParticipationBadge } from '@/components/ui/Badge'
 import type { Metadata } from 'next'
 
@@ -75,7 +75,7 @@ export default async function RegistrationsPage() {
                           )}
                         </td>
                         <td className="px-5 py-3 text-nova-muted text-xs hidden md:table-cell">
-                          {format(new Date(reg.created_at), 'MMM d, h:mm a')}
+                          {formatIST(reg.created_at, 'MMM d, h:mm a')}
                         </td>
                       </tr>
                     ))}

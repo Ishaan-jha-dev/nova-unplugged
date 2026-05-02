@@ -2,11 +2,11 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { format } from 'date-fns'
 import { Check, X, Eye, Search, RotateCcw, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { PaymentBadge } from '@/components/ui/Badge'
+import { formatIST } from '@/lib/utils/dateUtils'
 import { createClient } from '@/lib/supabase/client'
 
 type FilterKey = 'all' | 'pending' | 'approved' | 'rejected'
@@ -206,7 +206,7 @@ export function PaymentsClient({ submissions, adminId }: { submissions: any[]; a
                   <td className="px-5 py-4 text-nova-muted hidden sm:table-cell">{p.users?.email}</td>
                   <td className="px-5 py-4 font-mono text-nova-text-dim text-xs">{p.utr_number}</td>
                   <td className="px-5 py-4 text-nova-muted hidden md:table-cell">
-                    {format(new Date(p.created_at), 'MMM d, h:mm a')}
+                    {formatIST(p.created_at, 'MMM d, h:mm a')}
                   </td>
                   <td className="px-5 py-4"><PaymentBadge status={p.status} /></td>
                   <td className="px-5 py-4">

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { format } from 'date-fns'
+import { formatIST } from '@/lib/utils/dateUtils'
 import { MapPin, Clock, Users, Crown, Copy, Check, ExternalLink, UserMinus, Lock, Unlock } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { CategoryBadge, ParticipationBadge } from '@/components/ui/Badge'
@@ -85,7 +85,7 @@ export function MyEventsClient({ registrations, userId }: MyEventsClientProps) {
                   </div>
                   <div className="flex flex-col items-end gap-1 text-xs text-nova-muted">
                     {event?.venue && <span className="flex items-center gap-1"><MapPin size={11} />{event.venue}</span>}
-                    {event?.start_time && <span className="flex items-center gap-1"><Clock size={11} />{format(new Date(event.start_time), 'MMM d, h:mm a')}</span>}
+                    {event?.start_time && <span className="flex items-center gap-1"><Clock size={11} />{formatIST(event.start_time, 'MMM d, h:mm a')}</span>}
                   </div>
                 </div>
 
