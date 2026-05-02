@@ -65,6 +65,7 @@ export function PaymentsClient({ submissions, adminId }: { submissions: any[]; a
   const [isPending, startTransition] = useTransition()
   const [filter, setFilter] = useState<FilterKey>('pending')
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
   const [selected, setSelected] = useState<any | null>(null)
   const [rejectNote, setRejectNote] = useState('')
   const [actionType, setActionType] = useState<ActionType | null>(null)
@@ -78,6 +79,10 @@ export function PaymentsClient({ submissions, adminId }: { submissions: any[]; a
       (s.utr_number || '').includes(search)
     return matchFilter && matchSearch
   })
+
+  const pageSize = 10
+  const totalPages = Math.ceil(filtered.length / pageSize)
+  const paginatedData = filtered.slice((page - 1) * pageSize, page * pageSize)
 
   const counts = {
     all:      submissions.length,
@@ -166,7 +171,7 @@ export function PaymentsClient({ submissions, adminId }: { submissions: any[]; a
             type="text"
             placeholder="Search by name, email or UTR..."
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={e => { setSearch(e.target.value); setPage(1) }}
             className="nova-input pl-9 text-sm"
           />
         </div>
@@ -174,7 +179,7 @@ export function PaymentsClient({ submissions, adminId }: { submissions: any[]; a
           {filters.map(f => (
             <button
               key={f.key}
-              onClick={() => setFilter(f.key)}
+              onClick={() => { setFilter(f.key); setPage(1) }}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 filter === f.key ? 'bg-nova-primary text-white shadow-glow-sm' : 'glass text-nova-text-dim hover:text-nova-text'
               }`}
@@ -200,7 +205,7 @@ export function PaymentsClient({ submissions, adminId }: { submissions: any[]; a
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {filtered.map(p => (
+              {paginatedData.map(p => (
                 <tr key={p.id} className="hover:bg-white/3 transition-colors">
                   <td className="px-5 py-4 font-medium text-nova-text">{p.users?.full_name}</td>
                   <td className="px-5 py-4 text-nova-muted hidden sm:table-cell">{p.users?.email}</td>
@@ -287,12 +292,37 @@ export function PaymentsClient({ submissions, adminId }: { submissions: any[]; a
                   </td>
                 </tr>
               ))}
-              {filtered.length === 0 && (
+              {paginatedData.length === 0 && (
                 <tr><td colSpan={6} className="text-center py-12 text-nova-muted">No submissions found</td></tr>
               )}
             </tbody>
           </table>
         </div>
+        
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-5 py-4 border-t border-white/10 bg-white/5">
+            <p className="text-xs text-nova-muted">
+              Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, filtered.length)} of {filtered.length} entries
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                disabled={page === 1}
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                className="px-3 py-1.5 rounded-md text-xs font-medium glass hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                Previous
+              </button>
+              <button
+                disabled={page === totalPages}
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                className="px-3 py-1.5 rounded-md text-xs font-medium glass hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Confirm action modal */}

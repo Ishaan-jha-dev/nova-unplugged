@@ -49,15 +49,15 @@ export function Modal({ open, onClose, title, children, size = 'md', className }
       {/* Dialog */}
       <div
         className={cn(
-          'relative w-full glass-dark rounded-2xl shadow-glass animate-slide-up',
-          'border border-nova-primary/30',
+          'relative w-full glass-dark rounded-2xl shadow-glass animate-slide-up flex flex-col',
+          'border border-nova-primary/30 max-h-[90vh]',
           sizeMap[size],
           className
         )}
       >
         {/* Header */}
         {title && (
-          <div className="flex items-center justify-between p-6 border-b border-white/10">
+          <div className="flex items-center justify-between p-6 border-b border-white/10 shrink-0">
             <h2 className="text-lg font-semibold font-display text-nova-text">{title}</h2>
             <button
               onClick={onClose}
@@ -79,7 +79,7 @@ export function Modal({ open, onClose, title, children, size = 'md', className }
         )}
 
         {/* Content */}
-        <div className="p-6">{children}</div>
+        <div className="p-6 overflow-y-auto min-h-0">{children}</div>
       </div>
     </div>
   )

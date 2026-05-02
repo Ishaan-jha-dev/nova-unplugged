@@ -2,6 +2,8 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 
+import { formatIST } from '@/lib/utils/dateUtils'
+
 // Helper to check caller's role level
 async function getCallerRoleLevel(request: NextRequest): Promise<{ userId: string | null; roleLevel: number }> {
   const cookieStore = await cookies()
@@ -90,7 +92,7 @@ export async function POST(request: NextRequest) {
       state: scanResult, 
       name, 
       message, 
-      timestamp: new Date().toLocaleTimeString() 
+      timestamp: formatIST(new Date(), 'h:mm:ss a')
     })
 
   } catch (err: any) {

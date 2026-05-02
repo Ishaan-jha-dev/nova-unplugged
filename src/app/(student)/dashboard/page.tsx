@@ -156,10 +156,15 @@ export default async function DashboardPage() {
           </div>
 
           {/* Announcements */}
-          <div className="glass rounded-2xl p-6 border border-nova-primary/20 flex-1">
-            <h3 className="font-display font-semibold text-nova-text flex items-center gap-2 mb-4">
-              <Bell size={16} className="text-nova-warning" /> Announcements
-            </h3>
+          <div className="glass rounded-2xl p-6 border border-nova-primary/20 flex-1 flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display font-semibold text-nova-text flex items-center gap-2">
+                <Bell size={16} className="text-nova-warning" /> Announcements
+              </h3>
+              <Link href="/dashboard/announcements" className="text-xs text-nova-primary hover:text-nova-primary-light flex items-center gap-1 transition-colors">
+                View all <ArrowRight size={12} />
+              </Link>
+            </div>
             {announcements && announcements.length > 0 ? (
               <div className="flex flex-col gap-3">
                 {announcements.map(a => (

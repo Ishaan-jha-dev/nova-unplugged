@@ -128,6 +128,7 @@ export default async function AdminDashboard() {
             <h2 className="font-display font-semibold text-nova-text flex items-center gap-2">
               <QrCode size={16} className="text-nova-success" /> Recent Scans
             </h2>
+            <a href="/admin/scanner/logs" className="text-xs text-nova-primary hover:text-nova-primary-light transition-colors">View all →</a>
           </div>
           <div className="divide-y divide-white/5">
             {(recentScans || []).map(s => (

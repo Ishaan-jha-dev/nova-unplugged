@@ -221,6 +221,8 @@ export interface Database {
           id: string
           title: string
           body: string
+          target_audience: string | null
+          image_url: string | null
           posted_by: string
           created_at: string
         }
@@ -228,12 +230,16 @@ export interface Database {
           id?: string
           title: string
           body: string
+          target_audience?: string | null
+          image_url?: string | null
           posted_by: string
           created_at?: string
         }
         Update: {
           title?: string
           body?: string
+          target_audience?: string | null
+          image_url?: string | null
         }
       }
       scanner_log: {
