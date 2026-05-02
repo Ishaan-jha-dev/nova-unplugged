@@ -1,96 +1,86 @@
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { formatIST } from '@/lib/utils/dateUtils'
-import { CategoryBadge, ParticipationBadge } from '@/components/ui/Badge'
 import type { Metadata } from 'next'
+import { RegistrationsClient } from './RegistrationsClient'
 
 export const metadata: Metadata = { title: 'Registrations | Admin' }
 
-export default async function RegistrationsPage() {
+const PAGE_SIZE = 15
+
+export default async function RegistrationsPage(props: { searchParams: Promise<{ category?: string; page?: string }> }) {
+  const searchParams = await props.searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: registrations } = await supabase
-    .from('registrations')
-    .select(`
-      *, 
-      users(full_name, email),
-      events(title, category, participation_type),
-      teams(name, join_code)
-    `)
-    .order('created_at', { ascending: false })
+  const { data: userData } = await supabase.from('users').select('user_roles(permissions_level)').eq('id', user.id).single()
+  const roleLevel = (userData?.user_roles as any)?.permissions_level ?? 1
+  if (roleLevel < 3) redirect('/admin')
 
-  const byEvent: Record<string, any[]> = {}
-  for (const reg of registrations || []) {
-    const key = (reg.events as any)?.title || 'Unknown'
-    if (!byEvent[key]) byEvent[key] = []
-    byEvent[key].push(reg)
+  const admin = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
+  const selectedCategory = searchParams.category || 'all'
+  const page = parseInt(searchParams.page || '1', 10)
+  const from = (page - 1) * PAGE_SIZE
+  const to = from + PAGE_SIZE - 1
+
+  // 1. Fetch all active categories for the filter tabs
+  const { data: categories } = await admin.from('categories').select('*').order('title')
+
+  // 2. Stats — total unique students (deduped, avoids double count)
+  const { count: totalUnique } = await admin
+    .from('registrations')
+    .select('user_id', { count: 'exact', head: true })
+  // Note: Supabase doesn't natively support COUNT(DISTINCT) in the client SDK's select().
+  // We fetch unique user_ids via a workaround query below.
+  const { data: uniqueUserRows } = await admin
+    .from('registrations')
+    .select('user_id')
+  const uniqueStudentCount = new Set((uniqueUserRows || []).map((r: any) => r.user_id)).size
+
+  // 3. Per-event registration counts
+  const { data: allRegCounts } = await admin.from('registrations').select('event_id')
+  const perEventCount: Record<string, number> = {}
+  for (const r of allRegCounts || []) {
+    perEventCount[r.event_id] = (perEventCount[r.event_id] || 0) + 1
   }
 
-  return (
-    <div className="p-6 lg:p-8">
-      <div className="mb-8">
-        <h1 className="font-display font-bold text-3xl text-nova-text mb-1">Registrations</h1>
-        <p className="text-nova-text-dim text-sm">{registrations?.length || 0} total registrations</p>
-      </div>
+  // 4. Paginated registrations, filtered by category
+  let regQuery = admin
+    .from('registrations')
+    .select(`
+      *,
+      users(full_name, email),
+      events!inner(id, title, category_id, participation_type, categories(id, title)),
+      teams(name, join_code)
+    `, { count: 'exact' })
+    .order('created_at', { ascending: false })
+    .range(from, to)
 
-      <div className="flex flex-col gap-6">
-        {Object.entries(byEvent).map(([eventTitle, regs]) => {
-          const ev = regs[0]?.events
-          return (
-            <div key={eventTitle} className="glass rounded-2xl border border-nova-primary/20 overflow-hidden">
-              <div className="flex items-center justify-between p-5 border-b border-white/10">
-                <div>
-                  <h2 className="font-display font-semibold text-nova-text">{eventTitle}</h2>
-                  <div className="flex gap-2 mt-1.5">
-                    {ev?.category && <CategoryBadge category={ev.category} />}
-                    {ev?.participation_type && <ParticipationBadge type={ev.participation_type} />}
-                    <span className="text-xs text-nova-muted">{regs.length} registered</span>
-                  </div>
-                </div>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="border-b border-white/5">
-                    <tr className="text-nova-muted text-xs font-display tracking-wider uppercase">
-                      <th className="text-left px-5 py-3">Name</th>
-                      <th className="text-left px-5 py-3 hidden sm:table-cell">Email</th>
-                      <th className="text-left px-5 py-3">Team</th>
-                      <th className="text-left px-5 py-3 hidden md:table-cell">Registered</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5">
-                    {regs.map(reg => (
-                      <tr key={reg.id} className="hover:bg-white/3 transition-colors">
-                        <td className="px-5 py-3 text-nova-text font-medium">{(reg.users as any)?.full_name}</td>
-                        <td className="px-5 py-3 text-nova-muted text-xs hidden sm:table-cell">{(reg.users as any)?.email}</td>
-                        <td className="px-5 py-3">
-                          {reg.teams ? (
-                            <span className="glass px-2 py-1 rounded text-xs text-nova-primary border border-nova-primary/30">
-                              {(reg.teams as any).name} · {(reg.teams as any).join_code}
-                            </span>
-                          ) : (
-                            <span className="text-nova-muted text-xs">Individual</span>
-                          )}
-                        </td>
-                        <td className="px-5 py-3 text-nova-muted text-xs hidden md:table-cell">
-                          {formatIST(reg.created_at, 'MMM d, h:mm a')}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )
-        })}
-        {!registrations?.length && (
-          <div className="text-center py-16 glass rounded-2xl border border-nova-primary/20">
-            <p className="text-nova-muted">No registrations yet</p>
-          </div>
-        )}
-      </div>
-    </div>
+  if (selectedCategory !== 'all') {
+    // Filter via the joined events → category_id
+    regQuery = regQuery.eq('events.category_id', selectedCategory)
+  }
+
+  const { data: registrations, count: totalCount } = await regQuery
+
+  const totalPages = Math.ceil((totalCount || 0) / PAGE_SIZE)
+
+  return (
+    <RegistrationsClient
+      registrations={registrations || []}
+      categories={categories || []}
+      selectedCategory={selectedCategory}
+      page={page}
+      totalPages={totalPages}
+      totalCount={totalCount || 0}
+      uniqueStudentCount={uniqueStudentCount}
+      perEventCount={perEventCount}
+      adminRoleLevel={roleLevel}
+    />
   )
 }

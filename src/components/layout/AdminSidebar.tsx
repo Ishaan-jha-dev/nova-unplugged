@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import {
   Zap, LayoutDashboard, CreditCard, Users, Calendar,
-  List, QrCode, Download, LogOut, Menu, X, ChevronLeft, Bell, History
+  List, QrCode, Download, LogOut, Menu, X, ChevronLeft, Bell, History, Tag
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -23,6 +23,7 @@ const navItems: SidebarItem[] = [
   { href: '/admin/scanner',       label: 'QR Scanner',    icon: QrCode,          minLevel: 2 },
   { href: '/admin/scanner/logs',  label: 'Scan Logs',     icon: History,         minLevel: 4 },
   { href: '/admin/events',        label: 'Events',        icon: Calendar,        minLevel: 3 },
+  { href: '/admin/categories',    label: 'Categories',    icon: Tag,             minLevel: 4 },
   { href: '/admin/registrations', label: 'Registrations', icon: List,            minLevel: 3 },
   { href: '/admin/announcements', label: 'Announcements', icon: Bell,            minLevel: 3 },
   { href: '/admin/payments',      label: 'Payments',      icon: CreditCard,      minLevel: 4 },

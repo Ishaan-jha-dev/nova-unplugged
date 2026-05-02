@@ -10,7 +10,9 @@ export type PaymentStatus = 'pending' | 'approved' | 'rejected'
 export type EntryStatus = 'not_approved' | 'approved' | 'scanned'
 export type ParticipationType = 'individual' | 'team'
 export type ScanResult = 'valid' | 'already_scanned' | 'invalid'
-export type EventCategory = 'cultural' | 'technical' | 'sports' | 'fun' | 'other'
+export type CategoryStatus = 'active' | 'inactive'
+export type TeamStatus = 'active' | 'dissolved'
+export type JoinRequestStatus = 'pending' | 'accepted' | 'rejected'
 
 export interface Database {
   public: {
@@ -101,13 +103,34 @@ export interface Database {
           reviewed_by?: string | null
         }
       }
+      categories: {
+        Row: {
+          id: string
+          title: string
+          status: CategoryStatus
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          status?: CategoryStatus
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          title?: string
+          status?: CategoryStatus
+          updated_at?: string
+        }
+      }
       events: {
         Row: {
           id: string
           title: string
           description: string | null
           banner_url: string | null
-          category: EventCategory
+          category_id: string | null
           participation_type: ParticipationType
           team_size_min: number | null
           team_size_max: number | null
@@ -116,8 +139,10 @@ export interface Database {
           organizer_contact: string | null
           group_join_link: string | null
           venue: string | null
+          event_date: string | null
           start_time: string | null
           end_time: string | null
+          deadline: string | null
           is_active: boolean
           created_by: string | null
           created_at: string
@@ -127,7 +152,7 @@ export interface Database {
           title: string
           description?: string | null
           banner_url?: string | null
-          category?: EventCategory
+          category_id?: string | null
           participation_type?: ParticipationType
           team_size_min?: number | null
           team_size_max?: number | null
@@ -136,8 +161,10 @@ export interface Database {
           organizer_contact?: string | null
           group_join_link?: string | null
           venue?: string | null
+          event_date?: string | null
           start_time?: string | null
           end_time?: string | null
+          deadline?: string | null
           is_active?: boolean
           created_by?: string | null
           created_at?: string
@@ -146,7 +173,7 @@ export interface Database {
           title?: string
           description?: string | null
           banner_url?: string | null
-          category?: EventCategory
+          category_id?: string | null
           participation_type?: ParticipationType
           team_size_min?: number | null
           team_size_max?: number | null
@@ -155,8 +182,10 @@ export interface Database {
           organizer_contact?: string | null
           group_join_link?: string | null
           venue?: string | null
+          event_date?: string | null
           start_time?: string | null
           end_time?: string | null
+          deadline?: string | null
           is_active?: boolean
         }
       }
@@ -168,6 +197,7 @@ export interface Database {
           join_code: string
           leader_id: string
           is_open: boolean
+          status: TeamStatus
           created_at: string
         }
         Insert: {
@@ -177,11 +207,13 @@ export interface Database {
           join_code?: string
           leader_id: string
           is_open?: boolean
+          status?: TeamStatus
           created_at?: string
         }
         Update: {
           name?: string
           is_open?: boolean
+          status?: TeamStatus
         }
       }
       team_members: {
@@ -198,6 +230,28 @@ export interface Database {
           joined_at?: string
         }
         Update: { id?: string }
+      }
+      team_join_requests: {
+        Row: {
+          id: string
+          team_id: string
+          user_id: string
+          status: JoinRequestStatus
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          team_id: string
+          user_id: string
+          status?: JoinRequestStatus
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          status?: JoinRequestStatus
+          updated_at?: string
+        }
       }
       registrations: {
         Row: {
@@ -270,9 +324,11 @@ export interface Database {
 
 // Convenience type helpers
 export type UserRow = Database['public']['Tables']['users']['Row']
+export type CategoryRow = Database['public']['Tables']['categories']['Row']
 export type EventRow = Database['public']['Tables']['events']['Row']
 export type TeamRow = Database['public']['Tables']['teams']['Row']
 export type TeamMemberRow = Database['public']['Tables']['team_members']['Row']
+export type TeamJoinRequestRow = Database['public']['Tables']['team_join_requests']['Row']
 export type RegistrationRow = Database['public']['Tables']['registrations']['Row']
 export type PaymentSubmissionRow = Database['public']['Tables']['payment_submissions']['Row']
 export type AnnouncementRow = Database['public']['Tables']['announcements']['Row']

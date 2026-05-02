@@ -1,5 +1,5 @@
 import { cn } from './Button'
-import type { PaymentStatus, EntryStatus, ParticipationType, EventCategory } from '@/lib/supabase/types'
+import type { PaymentStatus, EntryStatus, ParticipationType } from '@/lib/supabase/types'
 
 interface BadgeProps {
   children: React.ReactNode
@@ -40,16 +40,9 @@ export function ParticipationBadge({ type }: { type: ParticipationType }) {
     : <span className="badge-team">👥 Team</span>
 }
 
-export function CategoryBadge({ category }: { category: EventCategory }) {
-  const map: Record<EventCategory, string> = {
-    cultural:  'bg-purple-500/15 text-purple-300 border border-purple-500/30',
-    technical: 'bg-blue-500/15 text-blue-300 border border-blue-500/30',
-    sports:    'bg-orange-500/15 text-orange-300 border border-orange-500/30',
-    fun:       'bg-yellow-500/15 text-yellow-300 border border-yellow-500/30',
-    other:     'bg-gray-500/15 text-gray-300 border border-gray-500/30',
-  }
+export function CategoryBadge({ category }: { category: string }) {
   return (
-    <span className={cn('inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize', map[category])}>
+    <span className={cn('inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize bg-nova-primary/10 text-nova-primary border border-nova-primary/20')}>
       {category}
     </span>
   )
