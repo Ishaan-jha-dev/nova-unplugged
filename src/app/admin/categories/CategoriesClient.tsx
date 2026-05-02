@@ -183,7 +183,7 @@ export function CategoriesClient({ categories, eventCountMap }: CategoriesClient
               Deleting will unassign them (they will remain in the database without a category).
             </div>
             <p className="text-nova-text-dim text-sm">
-              Are you sure you want to delete <strong className="text-nova-text">"{deleteConfirm.title}"</strong>?
+              Are you sure you want to delete <strong className="text-nova-text">&quot;{deleteConfirm.title}&quot;</strong>?
             </p>
             <div className="flex gap-3">
               <Button variant="ghost" fullWidth onClick={() => setDeleteConfirm(null)}>Cancel</Button>
