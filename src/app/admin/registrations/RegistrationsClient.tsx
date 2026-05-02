@@ -238,7 +238,14 @@ export function RegistrationsClient({
                       <tbody className="divide-y divide-white/5">
                         {teamRegs.map(reg => (
                           <tr key={reg.id} className="hover:bg-white/3 transition-colors">
-                            <td className="px-5 py-3 pl-8 text-nova-text">{(reg.users as any)?.full_name}</td>
+                            <td className="px-5 py-3 pl-8 text-nova-text flex items-center gap-2">
+                              {(reg.users as any)?.full_name}
+                              {reg.user_id === (teamRegs[0]?.teams as any)?.leader_id && (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-nova-warning/20 text-nova-warning border border-nova-warning/30 uppercase tracking-tighter">
+                                  Leader
+                                </span>
+                              )}
+                            </td>
                             <td className="px-5 py-3 text-nova-muted text-xs hidden sm:table-cell">{(reg.users as any)?.email}</td>
                             <td className="px-5 py-3 text-nova-muted text-xs hidden md:table-cell">{formatIST(reg.created_at, 'MMM d, h:mm a')}</td>
                             {adminRoleLevel >= 4 && (
