@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createServerClient } from '@supabase/ssr'
 import { redirect } from 'next/navigation'
 import { Users, CreditCard, QrCode, Calendar, Clock } from 'lucide-react'
 import { formatIST } from '@/lib/utils/dateUtils'
@@ -14,7 +15,7 @@ export default async function AdminDashboard() {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  const supabaseAdmin = createClient(
+  const supabaseAdmin = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { cookies: { getAll() { return [] }, setAll() {} } }
