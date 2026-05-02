@@ -2,6 +2,10 @@
 -- NOVA UNPLUGGED — Migration 006: 8-Digit Alphanumeric Entry Codes
 -- ============================================================
 
+-- 0. Change the column type from UUID to TEXT so it can accept our new short codes
+ALTER TABLE public.users 
+ALTER COLUMN entry_code TYPE TEXT USING entry_code::text;
+
 -- 1. Create a function to generate a random 8-character alphanumeric string
 CREATE OR REPLACE FUNCTION public.generate_8_digit_alphanumeric()
 RETURNS TEXT AS $$
@@ -30,7 +34,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- 3. Update existing users who have a UUID entry code
--- This replaces any existing long UUIDs with the new 8-digit format.
+-- Since we just converted the column to TEXT, existing UUIDs are now 36-character strings.
+-- This replaces those long strings with the new 8-digit format.
 UPDATE public.users 
 SET entry_code = public.generate_8_digit_alphanumeric()
 WHERE entry_code IS NOT NULL AND length(entry_code) > 8;
