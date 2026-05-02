@@ -51,39 +51,29 @@ export function ScannerClient({ scannerId }: { scannerId: string }) {
 
   const processCode = (code: string) => {
     startTransition(async () => {
-      const supabase = createClient()
-      // Find user with this entry code
-      const { data: targetUser } = await supabase
-        .from('users')
-        .select('id, full_name, entry_status, payment_status')
-        .eq('entry_code', code)
-        .maybeSingle()
+      try {
+        const res = await fetch('/api/admin/scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code })
+        })
 
-      let scanResult: ScanState
-      let resultData: ScanResult
+        const data = await res.json()
 
-      if (!targetUser || targetUser.payment_status !== 'approved') {
-        scanResult = 'invalid'
-        resultData = { state: 'invalid', message: 'QR code not found or payment not approved' }
-      } else if (targetUser.entry_status === 'scanned') {
-        scanResult = 'already_scanned'
-        resultData = { state: 'already_scanned', name: targetUser.full_name, message: 'This entry was already scanned' }
-      } else {
-        scanResult = 'valid'
-        // Update entry status
-        await supabase.from('users').update({ entry_status: 'scanned' }).eq('id', targetUser.id)
-        resultData = { state: 'valid', name: targetUser.full_name, timestamp: new Date().toLocaleTimeString() }
+        if (!res.ok) {
+          setResult({ state: 'invalid', message: data.error || 'API Error' })
+          return
+        }
+
+        setResult({
+          state: data.state as ScanState,
+          name: data.name,
+          timestamp: data.timestamp,
+          message: data.message
+        })
+      } catch (err: any) {
+        setResult({ state: 'invalid', message: err.message || 'Network error' })
       }
-
-      // Log the scan
-      await supabase.from('scanner_log').insert({
-        entry_code: code,
-        scanned_by: scannerId,
-        scan_result: scanResult,
-        target_user_id: targetUser?.id || null,
-      })
-
-      setResult(resultData)
     })
   }
 
