@@ -66,6 +66,12 @@ export function PaymentForm({ userData, submission, userId }: PaymentFormProps) 
         .insert({ user_id: userId, utr_number: utr.trim(), screenshot_url: path })
       if (dbErr) { setError(`Submission failed: ${dbErr.message}`); return }
 
+      // Also reset the user's master status to 'pending' (if it was rejected)
+      await supabase
+        .from('users')
+        .update({ payment_status: 'pending' })
+        .eq('id', userId)
+
       router.refresh()
     })
   }
