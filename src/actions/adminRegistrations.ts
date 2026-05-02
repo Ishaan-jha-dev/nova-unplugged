@@ -40,10 +40,11 @@ export async function kickUserFromEvent(
   const { data: reg } = await admin.from('registrations').select('*').eq('user_id', userId).eq('event_id', eventId).maybeSingle()
   if (!reg) throw new Error('User is not registered for this event')
 
-  if (reg.team_id) {
-    const { data: event } = await admin.from('events').select('team_size_min').eq('id', eventId).single()
-    const { count } = await admin.from('team_members').select('*', { count: 'exact', head: true }).eq('team_id', reg.team_id)
+    // Check if the user being kicked is the leader
+    const { data: team } = await admin.from('teams').select('leader_id').eq('id', reg.team_id).single()
+    const isLeader = team?.leader_id === userId
 
+    const { count } = await admin.from('team_members').select('*', { count: 'exact', head: true }).eq('team_id', reg.team_id)
     const remaining = (count || 1) - 1
     const wouldDissolve = remaining === 0
 
@@ -51,6 +52,22 @@ export async function kickUserFromEvent(
       await dissolveTeamInternal(reg.team_id, admin)
       revalidatePath('/admin/registrations')
       return { dissolved: true }
+    }
+
+    // If leader is kicked, transfer leadership to next oldest member
+    if (isLeader) {
+      const { data: nextLeader } = await admin
+        .from('team_members')
+        .select('user_id')
+        .eq('team_id', reg.team_id)
+        .neq('user_id', userId)
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle()
+      
+      if (nextLeader) {
+        await admin.from('teams').update({ leader_id: nextLeader.user_id }).eq('id', reg.team_id)
+      }
     }
 
     // Just remove user

@@ -121,17 +121,33 @@ export async function withdrawFromEvent(eventId: string) {
 
   if (reg.team_id) {
     // Team event — check if withdrawal dissolves the team
-    const { data: event } = await admin.from('events').select('team_size_min').eq('id', eventId).single()
-    const { count: memberCount } = await admin.from('team_members').select('*', { count: 'exact', head: true }).eq('team_id', reg.team_id)
+    // If the person leaving is the leader, transfer leadership to the next person
+    const { data: team } = await admin.from('teams').select('leader_id').eq('id', reg.team_id).single()
+    const isLeader = team?.leader_id === userId
 
+    const { count: memberCount } = await admin.from('team_members').select('*', { count: 'exact', head: true }).eq('team_id', reg.team_id)
     const remainingAfterLeave = (memberCount || 1) - 1
+
     if (remainingAfterLeave === 0) {
-      // Must dissolve since team is empty
       await dissolveTeamInternal(reg.team_id, admin)
       return { dissolved: true }
     }
 
-    // Just remove user from team
+    if (isLeader) {
+      const { data: nextLeader } = await admin
+        .from('team_members')
+        .select('user_id')
+        .eq('team_id', reg.team_id)
+        .neq('user_id', userId)
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle()
+      
+      if (nextLeader) {
+        await admin.from('teams').update({ leader_id: nextLeader.user_id }).eq('id', reg.team_id)
+      }
+    }
+
     await admin.from('team_members').delete().eq('team_id', reg.team_id).eq('user_id', userId)
     await admin.from('registrations').delete().eq('id', reg.id)
     await admin.from('team_join_requests').delete().eq('team_id', reg.team_id).eq('user_id', userId)
