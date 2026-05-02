@@ -13,5 +13,13 @@ export default async function ScannerPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  return <ScannerClient scannerId={user.id} />
+  const { data } = await supabase
+    .from('users')
+    .select('user_roles(permissions_level)')
+    .eq('id', user.id)
+    .single()
+
+  const roleLevel = (data?.user_roles as any)?.permissions_level ?? 1
+
+  return <ScannerClient scannerId={user.id} roleLevel={roleLevel} />
 }

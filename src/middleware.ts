@@ -93,9 +93,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Allow public routes for authenticated users too
-  if (isPublicRoute(pathname)) return response
-
   // ─── PERMAFIX: Always query DB for role using Service Role key ────────────
   const { roleLevel, paymentStatus } = await getRoleFromDB(request, user.id)
 
@@ -108,14 +105,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // ─── Level 4+: Admin / Super Admin — full access, no payment needed ──────
+  // Login/Register Lockout for authenticated users
+  if (pathname === '/login' || pathname === '/register') {
+    return roleLevel >= 4 ? redirect('/admin') : redirect('/dashboard')
+  }
+
+  // ─── Level 4+: Admin / Super Admin — full access ─────────────────────────
   if (roleLevel >= 4) {
-    if (pathname.startsWith('/payment')) return redirect('/dashboard')
+    // Total freedom. No forced redirects.
     return response
   }
 
   // ─── Level 3: OC Team — admin access except senior routes ────────────────
   if (roleLevel === 3) {
+    if (pathname === '/') return redirect('/dashboard')
     const blocked = ADMIN_SENIOR_ROUTES.some(r => pathname.startsWith(r))
     if (blocked) return redirect('/admin')
     return response
@@ -123,6 +126,7 @@ export async function middleware(request: NextRequest) {
 
   // ─── Level 2: Volunteer — scanner only ───────────────────────────────────
   if (roleLevel === 2) {
+    if (pathname === '/') return redirect('/dashboard')
     if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/scanner')) {
       return redirect('/admin/scanner')
     }
@@ -130,11 +134,21 @@ export async function middleware(request: NextRequest) {
   }
 
   // ─── Level 1: Student — payment gate ─────────────────────────────────────
+  // Redirect base URL to dashboard for regular users
+  if (pathname === '/') {
+    return redirect('/dashboard')
+  }
+
   if (paymentStatus !== 'approved') {
     if (!pathname.startsWith('/payment')) return redirect('/payment')
     return response
   }
-  if (pathname.startsWith('/admin')) return redirect('/')
+  
+  if (pathname.startsWith('/admin')) return redirect('/dashboard')
+  
+  // Allow other public routes (like /about, /timeline) for authenticated users
+  if (isPublicRoute(pathname)) return response
+  
   return response
 }
 

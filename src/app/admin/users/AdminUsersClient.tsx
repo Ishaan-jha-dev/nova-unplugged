@@ -41,6 +41,26 @@ export function AdminUsersClient({ users, roles, types, myLevel }: { users: any[
     })
   }
 
+  const handleResetScan = (userId: string) => {
+    startTransition(async () => {
+      try {
+        const res = await fetch('/api/admin/reset-scans', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId })
+        })
+        if (!res.ok) {
+          const data = await res.json()
+          alert(data.error || 'Failed to reset scan')
+        } else {
+          router.refresh()
+        }
+      } catch (err) {
+        alert('Network error while resetting scan')
+      }
+    })
+  }
+
   const paymentFilters = ['all', 'pending', 'approved', 'rejected']
   const roleFilters = ['all', ...roles.map(r => r.name)]
 
@@ -103,7 +123,21 @@ export function AdminUsersClient({ users, roles, types, myLevel }: { users: any[
                   <td className="px-5 py-3 text-nova-text text-xs">{u.batch || '—'}</td>
                   <td className="px-5 py-3 text-nova-text text-xs truncate max-w-[100px]">{u.zone || '—'}</td>
                   <td className="px-5 py-3"><PaymentBadge status={u.payment_status} /></td>
-                  <td className="px-5 py-3 hidden sm:table-cell"><EntryBadge status={u.entry_status} /></td>
+                  <td className="px-5 py-3 hidden sm:table-cell">
+                    <div className="flex items-center gap-2">
+                      <EntryBadge status={u.entry_status} />
+                      {u.entry_status === 'scanned' && myLevel >= 4 && (
+                        <button
+                          onClick={() => handleResetScan(u.id)}
+                          disabled={isPending}
+                          className="text-[10px] bg-nova-warning/10 hover:bg-nova-warning/20 text-nova-warning px-2 py-1 rounded border border-nova-warning/30 transition-colors"
+                          title="Reset Scan"
+                        >
+                          Reset QR
+                        </button>
+                      )}
+                    </div>
+                  </td>
                   <td className="px-5 py-3">
                     {myLevel >= 5 ? (
                       <select

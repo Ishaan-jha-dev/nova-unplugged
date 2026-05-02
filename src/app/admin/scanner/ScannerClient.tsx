@@ -16,7 +16,7 @@ interface ScanResult {
   message?: string
 }
 
-export function ScannerClient({ scannerId }: { scannerId: string }) {
+export function ScannerClient({ scannerId, roleLevel }: { scannerId: string; roleLevel: number }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [result, setResult] = useState<ScanResult>({ state: 'idle' })
@@ -85,6 +85,25 @@ export function ScannerClient({ scannerId }: { scannerId: string }) {
     setTimeout(() => window.location.reload(), 100)
   }
 
+  const handleBulkReset = () => {
+    if (!confirm('Are you sure you want to reset ALL scanned entries? This allows everyone to be scanned again.')) return
+    
+    startTransition(async () => {
+      try {
+        const res = await fetch('/api/admin/reset-scans', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bulk: true })
+        })
+        const data = await res.json()
+        if (res.ok) alert(data.message)
+        else alert(data.error || 'API Error')
+      } catch (e: any) {
+        alert(e.message || 'Network error')
+      }
+    })
+  }
+
   const overlayConfig = {
     valid: {
       bg: 'bg-nova-success/95',
@@ -123,9 +142,20 @@ export function ScannerClient({ scannerId }: { scannerId: string }) {
           <QrCode size={18} className="text-nova-primary" />
           <span className="font-display font-bold text-nova-text tracking-wider">GATE SCANNER</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 bg-nova-success rounded-full animate-pulse" />
-          <span className="text-nova-success text-xs font-display">LIVE</span>
+        <div className="flex items-center gap-3">
+          {roleLevel >= 4 && (
+            <button 
+              onClick={handleBulkReset}
+              disabled={isPending}
+              className="text-xs bg-nova-primary/20 hover:bg-nova-primary/30 text-nova-primary px-3 py-1.5 rounded-md font-medium transition-colors"
+            >
+              Bulk Reset
+            </button>
+          )}
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-nova-success rounded-full animate-pulse" />
+            <span className="text-nova-success text-xs font-display">LIVE</span>
+          </div>
         </div>
       </div>
 
