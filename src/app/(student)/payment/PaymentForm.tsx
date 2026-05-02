@@ -104,22 +104,15 @@ export function PaymentForm({ userData, submission, userId }: PaymentFormProps) 
         </div>
 
         {/* Status banner if already submitted */}
-        {hasSubmission && (
-          <div className={`mb-6 p-4 rounded-xl border flex items-start gap-4 ${
-            submission.status === 'pending'  ? 'bg-yellow-500/10 border-yellow-500/30' :
-            submission.status === 'rejected' ? 'bg-red-500/10 border-red-500/30' : ''
-          }`}>
-            {submission.status === 'pending'  && <Clock size={20} className="text-yellow-400 mt-0.5 shrink-0" />}
-            {submission.status === 'rejected' && <XCircle size={20} className="text-red-400 mt-0.5 shrink-0" />}
+        {hasSubmission && submission.status === 'rejected' && (
+          <div className="mb-6 p-4 rounded-xl border flex items-start gap-4 bg-red-500/10 border-red-500/30">
+            <XCircle size={20} className="text-red-400 mt-0.5 shrink-0" />
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <PaymentBadge status={submission.status} />
-                <span className="text-sm text-nova-text-dim">
-                  {submission.status === 'pending'  && 'Your submission is under review by the admin team.'}
-                  {submission.status === 'rejected' && 'Your submission was rejected. Please resubmit.'}
-                </span>
+                <PaymentBadge status="rejected" />
+                <span className="text-sm text-nova-text-dim">Your submission was rejected. Please resubmit.</span>
               </div>
-              {submission.status === 'rejected' && submission.admin_note && (
+              {submission.admin_note && (
                 <p className="text-red-400 text-sm mt-1">
                   <AlertTriangle size={12} className="inline mr-1" />
                   Reason: {submission.admin_note}
@@ -129,9 +122,30 @@ export function PaymentForm({ userData, submission, userId }: PaymentFormProps) 
           </div>
         )}
 
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Payment instructions */}
-          <div className="glass rounded-2xl p-6 border border-nova-primary/30">
+        {/* ─── Pending / Under Review State ─────────────────────── */}
+        {hasSubmission && submission.status === 'pending' ? (
+          <div className="glass rounded-3xl p-10 border border-nova-primary/30 text-center flex flex-col items-center gap-6 shadow-glow-purple/10">
+            <div className="w-20 h-20 rounded-full bg-yellow-500/10 border border-yellow-500/30 flex items-center justify-center animate-pulse">
+              <Clock size={40} className="text-yellow-400" />
+            </div>
+            <div>
+              <h2 className="font-display font-bold text-2xl text-nova-text mb-2">Verification in Progress</h2>
+              <p className="text-nova-text-dim max-w-sm mx-auto">
+                We've received your payment proof! Our admin team is currently verifying your transaction. 
+                This usually takes a few hours.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-nova-muted text-xs font-mono">
+              UTR: {submission.utr_number}
+            </div>
+            <Button variant="outline" size="sm" onClick={() => router.refresh()}>
+              Refresh Status
+            </Button>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Payment instructions */}
+            <div className="glass rounded-2xl p-6 border border-nova-primary/30">
             <h2 className="font-display font-semibold text-nova-text flex items-center gap-2 mb-5">
               <CreditCard size={18} className="text-nova-primary" /> Payment Details
             </h2>
