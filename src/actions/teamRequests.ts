@@ -66,29 +66,39 @@ export async function respondToJoinRequest(requestId: string, action: 'accepted'
   const { supabase, userId } = await getAuthUser()
   const admin = getAdminClient()
 
-  // Get the request
-  const { data: req } = await admin.from('team_join_requests').select('*, teams(leader_id, event_id, team_size_max)').eq('id', requestId).single()
-  if (!req) throw new Error('Request not found')
+  // Get the request with team and event details
+  const { data: req, error: fetchErr } = await admin
+    .from('team_join_requests')
+    .select('*, teams(id, leader_id, event_id, events(team_size_max))')
+    .eq('id', requestId)
+    .single()
+
+  if (fetchErr || !req) throw new Error('Request not found or database error')
 
   // Verify caller is the team leader
-  const leader_id = (req.teams as any)?.leader_id
-  if (leader_id !== userId) throw new Error('Only the team leader can respond to requests')
+  const team = req.teams as any
+  if (team?.leader_id !== userId) throw new Error('Only the team leader can respond to requests')
 
   if (action === 'accepted') {
-    const event_id = (req.teams as any)?.event_id
-    const team_size_max = (req.teams as any)?.team_size_max
+    const event_id = team?.event_id
+    const team_size_max = team?.events?.team_size_max
 
     // Check team not full
-    const { count } = await admin.from('team_members').select('*', { count: 'exact', head: true }).eq('team_id', req.team_id)
+    const { count, error: countErr } = await admin
+      .from('team_members')
+      .select('*', { count: 'exact', head: true })
+      .eq('team_id', req.team_id)
+    
+    if (countErr) throw new Error('Failed to verify team size')
     if (team_size_max && (count || 0) >= team_size_max) throw new Error('Team is already full')
 
     // Add to team_members
     const { error: memberErr } = await admin.from('team_members').insert({ team_id: req.team_id, user_id: req.user_id })
-    if (memberErr && !memberErr.message.includes('duplicate')) throw new Error(memberErr.message)
+    if (memberErr && !memberErr.message.includes('duplicate')) throw new Error('Failed to add member to team')
 
     // Create registration
     const { error: regErr } = await admin.from('registrations').insert({ user_id: req.user_id, event_id, team_id: req.team_id })
-    if (regErr && !regErr.message.includes('duplicate')) throw new Error(regErr.message)
+    if (regErr && !regErr.message.includes('duplicate')) throw new Error('Failed to register member for event')
   }
 
   // Update request status
