@@ -130,9 +130,11 @@ export function AdminEventsClient({ events, creatorId }: { events: EventRow[]; c
       }
 
       if (editingEvent) {
-        await supabase.from('events').update(payload).eq('id', editingEvent.id)
+        const { error: saveErr } = await supabase.from('events').update(payload).eq('id', editingEvent.id)
+        if (saveErr) { setError(`Failed to update event: ${saveErr.message}`); return }
       } else {
-        await supabase.from('events').insert(payload)
+        const { error: saveErr } = await supabase.from('events').insert(payload)
+        if (saveErr) { setError(`Failed to create event: ${saveErr.message}`); return }
       }
 
       setModalOpen(false)
@@ -143,7 +145,8 @@ export function AdminEventsClient({ events, creatorId }: { events: EventRow[]; c
   const handleDelete = (event: EventRow) => {
     startTransition(async () => {
       const supabase = createClient()
-      await supabase.from('events').delete().eq('id', event.id)
+      const { error } = await supabase.from('events').delete().eq('id', event.id)
+      if (error) { alert(`Delete failed: ${error.message}`); return }
       setDeleteConfirm(null)
       router.refresh()
     })
@@ -152,7 +155,8 @@ export function AdminEventsClient({ events, creatorId }: { events: EventRow[]; c
   const handleToggleActive = (event: EventRow) => {
     startTransition(async () => {
       const supabase = createClient()
-      await supabase.from('events').update({ is_active: !event.is_active }).eq('id', event.id)
+      const { error } = await supabase.from('events').update({ is_active: !event.is_active }).eq('id', event.id)
+      if (error) { alert(`Update failed: ${error.message}`); return }
       router.refresh()
     })
   }
