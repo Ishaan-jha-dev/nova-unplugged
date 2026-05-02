@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -131,7 +131,7 @@ export function PaymentForm({ userData, submission, userId }: PaymentFormProps) 
             <div>
               <h2 className="font-display font-bold text-2xl text-nova-text mb-2">Verification in Progress</h2>
               <p className="text-nova-text-dim max-w-sm mx-auto">
-                We've received your payment proof! Our admin team is currently verifying your transaction. 
+                We&apos;ve received your payment proof! Our admin team is currently verifying your transaction. 
                 This usually takes a few hours.
               </p>
             </div>

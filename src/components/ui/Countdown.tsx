@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { cn } from './Button'
 
 interface CountdownProps {
@@ -27,7 +27,7 @@ function getTimeLeft(target: Date): TimeLeft {
 }
 
 export function Countdown({ targetDate, className, size = 'md' }: CountdownProps) {
-  const target = typeof targetDate === 'string' ? new Date(targetDate) : targetDate
+  const target = useMemo(() => typeof targetDate === 'string' ? new Date(targetDate) : targetDate, [targetDate])
   const [time, setTime] = useState<TimeLeft>(getTimeLeft(target))
 
   useEffect(() => {
