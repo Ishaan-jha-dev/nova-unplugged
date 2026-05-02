@@ -224,7 +224,8 @@ export function PaymentForm({ userData, submission, userId }: PaymentFormProps) 
             </div>
           </div>
         </div>
-      </div>
+      )}
+    </div>
     </div>
   )
 }
