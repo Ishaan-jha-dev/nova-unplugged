@@ -56,7 +56,7 @@ export default async function RegistrationsPage(props: { searchParams: Promise<{
       *,
       users(full_name, email),
       events!inner(id, title, category_id, participation_type, categories(id, title)),
-      teams(name, join_code)
+      teams(name, join_code, leader_id)
     `, { count: 'exact' })
     .order('created_at', { ascending: false })
     .range(from, to)
