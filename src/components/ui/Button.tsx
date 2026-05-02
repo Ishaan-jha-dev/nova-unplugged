@@ -8,7 +8,7 @@ export function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs))
 }
 
-type ButtonVariant = 'primary' | 'accent' | 'outline' | 'ghost' | 'danger' | 'success'
+type ButtonVariant = 'primary' | 'accent' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning'
 type ButtonSize = 'sm' | 'md' | 'lg' | 'xl'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -32,6 +32,8 @@ const variantStyles: Record<ButtonVariant, string> = {
     'bg-red-600 text-white hover:bg-red-500 hover:shadow-[0_0_20px_rgba(239,68,68,0.5)]',
   success:
     'bg-nova-success/20 text-nova-success border border-nova-success/40 hover:bg-nova-success/30',
+  warning:
+    'bg-yellow-500/20 text-yellow-300 border border-yellow-500/40 hover:bg-yellow-500/30 hover:shadow-[0_0_16px_rgba(234,179,8,0.3)]',
 }
 
 const sizeStyles: Record<ButtonSize, string> = {
