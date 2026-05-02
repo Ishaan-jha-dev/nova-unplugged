@@ -1,13 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Zap, LayoutDashboard, Calendar, BookMarked, User, LogOut } from 'lucide-react'
+import { Zap, LayoutDashboard, Calendar, BookMarked, User, LogOut, Info, Clock } from 'lucide-react'
 
 const studentNav = [
   { href: '/dashboard',           label: 'Dashboard',  icon: LayoutDashboard },
   { href: '/dashboard/events',    label: 'Events',     icon: Calendar },
   { href: '/dashboard/my-events', label: 'My Events',  icon: BookMarked },
   { href: '/profile',             label: 'Profile',    icon: User },
+  { href: '/timeline',            label: 'Timeline',   icon: Clock },
+  { href: '/about',               label: 'About',      icon: Info },
 ]
 
 export default async function StudentLayout({ children }: { children: React.ReactNode }) {

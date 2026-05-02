@@ -32,7 +32,6 @@ const exportTypes = [
     bg: 'bg-nova-primary/10',
     border: 'border-nova-primary/30',
     headers: ['full_name', 'email', 'phone', 'college', 'student_id', 'course', 'year', 'payment_status', 'entry_status', 'created_at'],
-    query: async (supabase: any) => supabase.from('users').select('full_name, email, phone, college, student_id, course, year, payment_status, entry_status, created_at').order('created_at'),
   },
   {
     id: 'registrations',
@@ -43,23 +42,6 @@ const exportTypes = [
     bg: 'bg-nova-accent/10',
     border: 'border-nova-accent/30',
     headers: ['user_name', 'user_email', 'event_title', 'participation_type', 'team_name', 'team_code', 'registered_at'],
-    query: async (supabase: any) => {
-      const { data } = await supabase
-        .from('registrations')
-        .select('created_at, users(full_name, email), events(title, participation_type), teams(name, join_code)')
-        .order('created_at')
-      return {
-        data: (data || []).map((r: any) => ({
-          user_name: r.users?.full_name,
-          user_email: r.users?.email,
-          event_title: r.events?.title,
-          participation_type: r.events?.participation_type,
-          team_name: r.teams?.name || '',
-          team_code: r.teams?.join_code || '',
-          registered_at: r.created_at,
-        }))
-      }
-    },
   },
   {
     id: 'payments',
@@ -70,22 +52,6 @@ const exportTypes = [
     bg: 'bg-nova-warning/10',
     border: 'border-nova-warning/30',
     headers: ['user_name', 'user_email', 'utr_number', 'status', 'admin_note', 'created_at'],
-    query: async (supabase: any) => {
-      const { data } = await supabase
-        .from('payment_submissions')
-        .select('utr_number, status, admin_note, created_at, users(full_name, email)')
-        .order('created_at')
-      return {
-        data: (data || []).map((p: any) => ({
-          user_name: p.users?.full_name,
-          user_email: p.users?.email,
-          utr_number: p.utr_number,
-          status: p.status,
-          admin_note: p.admin_note || '',
-          created_at: p.created_at,
-        }))
-      }
-    },
   },
   {
     id: 'scanner',
@@ -96,21 +62,6 @@ const exportTypes = [
     bg: 'bg-nova-success/10',
     border: 'border-nova-success/30',
     headers: ['entry_code', 'scan_result', 'scanned_by', 'target_user', 'scanned_at'],
-    query: async (supabase: any) => {
-      const { data } = await supabase
-        .from('scanner_log')
-        .select('entry_code, scan_result, scanned_at, users!scanned_by(full_name), users!target_user_id(full_name)')
-        .order('scanned_at')
-      return {
-        data: (data || []).map((s: any) => ({
-          entry_code: s.entry_code,
-          scan_result: s.scan_result,
-          scanned_by: (s as any)['users!scanned_by']?.full_name || '',
-          target_user: (s as any)['users!target_user_id']?.full_name || '',
-          scanned_at: s.scanned_at,
-        }))
-      }
-    },
   },
 ]
 
@@ -119,12 +70,28 @@ export function ExportClient() {
 
   const handleExport = async (exportType: typeof exportTypes[0]) => {
     setLoadingId(exportType.id)
-    const supabase = createClient()
-    const result = await exportType.query(supabase)
-    const rows = Array.isArray(result) ? result : result.data || []
-    const csv = toCSV(rows, exportType.headers)
-    downloadCSV(csv, `nova-unplugged-${exportType.id}-${new Date().toISOString().slice(0, 10)}.csv`)
-    setLoadingId(null)
+    try {
+      const res = await fetch(`/api/admin/export?type=${exportType.id}`)
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.error || 'Failed to export data')
+      }
+      
+      const { data } = await res.json()
+      
+      if (!data || data.length === 0) {
+        alert('No data available to export.')
+        setLoadingId(null)
+        return
+      }
+
+      const csv = toCSV(data, exportType.headers)
+      downloadCSV(csv, `nova-unplugged-${exportType.id}-${new Date().toISOString().slice(0, 10)}.csv`)
+    } catch (err: any) {
+      alert(`Export Error: ${err.message}`)
+    } finally {
+      setLoadingId(null)
+    }
   }
 
   return (
