@@ -78,7 +78,15 @@ export function AdminSidebar({ roleLevel, userName, userEmail }: AdminSidebarPro
       {/* Nav */}
       <nav className="flex-1 p-4 flex flex-col gap-1 overflow-y-auto">
         {visibleItems.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href || (href !== '/admin' && pathname.startsWith(href))
+          // Check if this is the most specific match among visible items
+          // This prevents both "Scanner" and "Scan Logs" from being highlighted at the same time
+          const isMoreSpecificMatchAvailable = visibleItems.some(
+            other => other.href !== href && 
+                     other.href.startsWith(href) && 
+                     pathname.startsWith(other.href)
+          )
+          const active = (pathname === href || (href !== '/admin' && pathname.startsWith(href))) && !isMoreSpecificMatchAvailable
+          
           return (
             <Link
               key={href}
