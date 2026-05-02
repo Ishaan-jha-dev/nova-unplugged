@@ -174,33 +174,44 @@ export function AdminEventsClient({ events, creatorId }: { events: EventRow[]; c
       {/* Events grid */}
       <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
         {events.map(event => (
-          <div key={event.id} className={`glass rounded-2xl border overflow-hidden transition-all ${event.is_active ? 'border-nova-primary/20' : 'border-white/10 opacity-60'}`}>
-            {/* Banner */}
-            <div className="h-28 bg-gradient-to-br from-nova-primary/20 to-nova-accent/10 relative">
+          <div key={event.id} className={`glass rounded-2xl border overflow-hidden transition-all group ${event.is_active ? 'border-white/5 hover:border-nova-primary/30' : 'border-white/5 opacity-50'}`}>
+            {/* Banner Area */}
+            <div className="h-44 bg-gradient-to-br from-nova-primary/20 to-nova-accent/10 relative overflow-hidden border-b border-white/5">
               {event.banner_url && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/event-banners/${event.banner_url}`} alt="" className="w-full h-full object-cover" />
+                <img 
+                  src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/event-banners/${event.banner_url}`} 
+                  alt="" 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                />
               )}
-              <div className="absolute top-2 left-2 flex gap-1.5 flex-wrap">
-                <CategoryBadge category={event.category} />
-                <ParticipationBadge type={event.participation_type} />
-              </div>
               {!event.is_active && (
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                  <span className="text-white text-xs font-bold bg-black/50 px-2 py-1 rounded">INACTIVE</span>
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-10">
+                  <span className="text-white text-[10px] font-bold bg-red-500 px-2 py-1 rounded tracking-widest uppercase">Hidden from Students</span>
                 </div>
               )}
+              <div className="absolute inset-0 bg-gradient-to-t from-nova-navy/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
 
-            {/* Content */}
-            <div className="p-4">
-              <h3 className="font-display font-semibold text-nova-text mb-1 truncate">{event.title}</h3>
-              <div className="flex flex-col gap-1 text-xs text-nova-muted mb-4">
-                {event.venue && <span className="flex items-center gap-1"><MapPin size={10} />{event.venue}</span>}
-                {event.start_time && <span className="flex items-center gap-1"><Calendar size={10} />{formatIST(event.start_time, 'MMM d, h:mm a')}</span>}
+            {/* Content Area */}
+            <div className="p-5 flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <div className="flex gap-2">
+                  <CategoryBadge category={event.category} />
+                  <ParticipationBadge type={event.participation_type} />
+                </div>
               </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" icon={<Pencil size={13} />} onClick={() => openEdit(event)}>Edit</Button>
+
+              <div>
+                <h3 className="font-display font-bold text-nova-text group-hover:text-nova-primary transition-colors mb-1 truncate">{event.title}</h3>
+                <div className="flex flex-col gap-1.5 text-[11px] text-nova-muted">
+                  {event.venue && <span className="flex items-center gap-2"><MapPin size={12} className="text-nova-primary" />{event.venue}</span>}
+                  {event.start_time && <span className="flex items-center gap-2"><Calendar size={12} className="text-nova-primary" />{formatIST(event.start_time, 'MMM d, h:mm a')}</span>}
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-1">
+                <Button variant="outline" size="sm" fullWidth icon={<Pencil size={13} />} onClick={() => openEdit(event)}>Edit</Button>
                 <Button
                   variant="ghost"
                   size="sm"
