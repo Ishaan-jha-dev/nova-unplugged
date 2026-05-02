@@ -40,6 +40,7 @@ export async function kickUserFromEvent(
   const { data: reg } = await admin.from('registrations').select('*').eq('user_id', userId).eq('event_id', eventId).maybeSingle()
   if (!reg) throw new Error('User is not registered for this event')
 
+  if (reg.team_id) {
     // Check if the user being kicked is the leader
     const { data: team } = await admin.from('teams').select('leader_id').eq('id', reg.team_id).single()
     const isLeader = team?.leader_id === userId
