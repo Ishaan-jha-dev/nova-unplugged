@@ -213,57 +213,83 @@ export function EventsClient({ events, registeredEventIds, userId }: EventsClien
             return (
               <div
                 key={event.id}
-                className="glass rounded-2xl overflow-hidden border border-nova-primary/15 hover:border-nova-primary/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-glow-sm cursor-pointer group flex flex-col"
+                className="glass rounded-2xl overflow-hidden border border-white/5 hover:border-nova-primary/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-nova-primary/10 cursor-pointer group flex flex-col"
                 onClick={() => { setSelectedEvent(event); setActionError(null) }}
               >
-                {/* Banner */}
-                <div className="h-36 bg-gradient-to-br from-nova-primary/30 to-nova-accent/20 relative overflow-hidden">
+                {/* Banner Area */}
+                <div className="h-44 bg-gradient-to-br from-nova-primary/20 to-nova-accent/10 relative overflow-hidden border-b border-white/5">
                   {event.banner_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/event-banners/${event.banner_url}`} alt={event.title} className="w-full h-full object-cover" />
+                    <img 
+                      src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/event-banners/${event.banner_url}`} 
+                      alt={event.title} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <span className="text-5xl opacity-40">
+                      <span className="text-6xl opacity-20 group-hover:scale-110 transition-transform duration-500">
                         {event.category === 'cultural' ? '🎭' : event.category === 'technical' ? '💻' : event.category === 'sports' ? '🏆' : event.category === 'fun' ? '🎉' : '⚡'}
                       </span>
                     </div>
                   )}
-                  <div className="absolute top-3 left-3 flex gap-2">
-                    <CategoryBadge category={event.category} />
-                    <ParticipationBadge type={event.participation_type} />
-                  </div>
-                  {isRegistered && (
-                    <div className="absolute top-3 right-3 bg-nova-success/90 text-nova-navy text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
-                      <Check size={10} /> Registered
-                    </div>
-                  )}
+                  
+                  {/* Subtle Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-nova-navy/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
 
-                {/* Content */}
-                <div className="p-5 flex flex-col gap-3 flex-1">
-                  <h3 className="font-display font-semibold text-nova-text group-hover:text-nova-primary transition-colors">{event.title}</h3>
-                  {event.description && (
-                    <p className="text-nova-text-dim text-sm line-clamp-2">{event.description}</p>
-                  )}
-                  <div className="flex flex-col gap-1.5 text-xs text-nova-muted mt-auto">
-                    {event.venue && (
-                      <span className="flex items-center gap-1.5"><MapPin size={11} />{event.venue}</span>
-                    )}
-                    {event.start_time && (
-                      <span className="flex items-center gap-1.5"><Clock size={11} />{formatIST(event.start_time, 'MMM d, h:mm a')}</span>
-                    )}
-                    {event.organizer_name && (
-                      <span className="flex items-center gap-1.5"><User size={11} />{event.organizer_name}</span>
+                {/* Content Area */}
+                <div className="p-5 flex flex-col flex-1">
+                  {/* Badges Row */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex gap-2">
+                      <CategoryBadge category={event.category} />
+                      <ParticipationBadge type={event.participation_type} />
+                    </div>
+                    {isRegistered && (
+                      <span className="flex items-center gap-1 text-[10px] font-bold text-nova-success uppercase tracking-widest">
+                        <Check size={12} /> Joined
+                      </span>
                     )}
                   </div>
+
+                  <h3 className="font-display font-bold text-lg text-nova-text group-hover:text-nova-primary transition-colors mb-2 line-clamp-1">
+                    {event.title}
+                  </h3>
+
+                  {event.description && (
+                    <p className="text-nova-text-dim text-sm line-clamp-2 mb-4 leading-relaxed">
+                      {event.description}
+                    </p>
+                  )}
+
+                  <div className="flex flex-col gap-2 text-xs text-nova-muted mb-5 mt-auto">
+                    {event.venue && (
+                      <span className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-md bg-white/5 flex items-center justify-center shrink-0">
+                          <MapPin size={12} className="text-nova-primary" />
+                        </div>
+                        <span className="truncate">{event.venue}</span>
+                      </span>
+                    )}
+                    {event.start_time && (
+                      <span className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-md bg-white/5 flex items-center justify-center shrink-0">
+                          <Clock size={12} className="text-nova-primary" />
+                        </div>
+                        <span>{formatIST(event.start_time, 'MMM d, h:mm a')}</span>
+                      </span>
+                    )}
+                  </div>
+
                   <Button
                     variant={isRegistered ? 'success' : 'primary'}
                     size="sm"
                     fullWidth
+                    className={isRegistered ? 'bg-nova-success/10 text-nova-success border-nova-success/20 hover:bg-nova-success/20' : ''}
                     icon={isRegistered ? <Check size={14} /> : <Plus size={14} />}
                     onClick={e => { e.stopPropagation(); if (!isRegistered) setSelectedEvent(event) }}
                   >
-                    {isRegistered ? 'Registered' : 'Register'}
+                    {isRegistered ? 'Registered' : 'View & Register'}
                   </Button>
                 </div>
               </div>
