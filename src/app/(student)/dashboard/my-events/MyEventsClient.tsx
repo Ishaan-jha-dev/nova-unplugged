@@ -79,13 +79,13 @@ export function MyEventsClient({ registrations, userId }: MyEventsClientProps) {
                   <div>
                     <h2 className="font-display font-semibold text-xl text-nova-text mb-2">{event?.title}</h2>
                     <div className="flex gap-2 flex-wrap">
-                      <CategoryBadge category={event?.category} />
+                      {event?.categories?.title && <CategoryBadge category={event.categories.title} />}
                       <ParticipationBadge type={event?.participation_type} />
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-1 text-xs text-nova-muted">
                     {event?.venue && <span className="flex items-center gap-1"><MapPin size={11} />{event.venue}</span>}
-                    {event?.start_time && <span className="flex items-center gap-1"><Clock size={11} />{formatIST(event.start_time, 'MMM d, h:mm a')}</span>}
+                    {event?.event_date && <span className="flex items-center gap-1"><Clock size={11} />{event.event_date}{event.start_time ? ` · ${event.start_time}` : ''}</span>}
                   </div>
                 </div>
 

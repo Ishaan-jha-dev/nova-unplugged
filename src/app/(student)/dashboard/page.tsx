@@ -16,7 +16,7 @@ export default async function DashboardPage() {
 
   const [{ data: _userData }, { data: _registrations }, { data: _announcements }] = await Promise.all([
     supabase.from('users').select('*, user_roles(name, permissions_level)').eq('id', user.id).single(),
-    supabase.from('registrations').select('*, events(title, category, start_time, participation_type)').eq('user_id', user.id).limit(5),
+    supabase.from('registrations').select('*, events(title, category_id, event_date, start_time, participation_type, categories(title))').eq('user_id', user.id).limit(5),
     supabase.from('announcements').select('*, users(full_name)').order('created_at', { ascending: false }).limit(5),
   ])
   // Cast to bypass Supabase v2 join type inference limitations
@@ -108,10 +108,10 @@ export default async function DashboardPage() {
                     <div className="flex-1 min-w-0">
                       <p className="text-nova-text font-medium text-sm truncate">{ev?.title}</p>
                       <p className="text-nova-muted text-xs mt-0.5">
-                        {ev?.start_time ? formatIST(ev.start_time, 'MMM d, h:mm a') : 'Date TBD'}
+                        {ev?.event_date ? `${ev.event_date}${ev.start_time ? ` · ${ev.start_time}` : ''}` : 'Date TBD'}
                       </p>
                     </div>
-                    {ev?.category && <CategoryBadge category={ev.category} />}
+                    {ev?.categories?.title && <CategoryBadge category={ev.categories.title} />}
                   </div>
                 )
               })}

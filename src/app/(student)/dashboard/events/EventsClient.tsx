@@ -197,14 +197,18 @@ export function EventsClient({
                   {event.banner_url
                     // eslint-disable-next-line @next/next/no-img-element
                     ? <img src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/event-banners/${event.banner_url}`} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    : <div className="w-full h-full flex items-center justify-center"><span className="text-6xl opacity-20">{event.categories?.title === 'Cultural' ? '🎭' : event.categories?.title === 'Technical' ? '💻' : event.categories?.title === 'Sports' ? '🏆' : event.categories?.title === 'Fun' ? '🎉' : '⚡'}</span></div>
+                    : <div className="w-full h-full flex items-center justify-center"><span className="text-6xl opacity-20">{((Array.isArray(event.categories) ? event.categories[0] : event.categories) as any)?.title === 'Cultural' ? '🎭' : ((Array.isArray(event.categories) ? event.categories[0] : event.categories) as any)?.title === 'Technical' ? '💻' : ((Array.isArray(event.categories) ? event.categories[0] : event.categories) as any)?.title === 'Sports' ? '🏆' : ((Array.isArray(event.categories) ? event.categories[0] : event.categories) as any)?.title === 'Fun' ? '🎉' : '⚡'}</span></div>
                   }
                   {deadlinePassed && <div className="absolute inset-0 bg-black/50 flex items-center justify-center"><span className="text-white text-xs font-bold bg-red-500 px-2 py-1 rounded tracking-widest">REGISTRATION CLOSED</span></div>}
                 </div>
                 <div className="p-5 flex flex-col flex-1">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex gap-2">
-                      {event.categories?.title && <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-nova-primary/10 text-nova-primary border border-nova-primary/20">{event.categories.title}</span>}
+                      {((Array.isArray(event.categories) ? event.categories[0] : event.categories) as any)?.title && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-nova-primary/10 text-nova-primary border border-nova-primary/20">
+                          {((Array.isArray(event.categories) ? event.categories[0] : event.categories) as any).title}
+                        </span>
+                      )}
                       <ParticipationBadge type={event.participation_type} />
                     </div>
                     {isRegistered && <span className="flex items-center gap-1 text-[10px] font-bold text-nova-success uppercase tracking-widest"><Check size={12} /> Joined</span>}
@@ -246,7 +250,11 @@ export function EventsClient({
                 <img src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/event-banners/${selectedEvent.banner_url}`} alt={selectedEvent.title} className="w-full h-48 object-cover rounded-xl" />
               )}
               <div className="flex gap-2 flex-wrap">
-                {selectedEvent.categories?.title && <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-nova-primary/10 text-nova-primary border border-nova-primary/20">{selectedEvent.categories.title}</span>}
+                {((Array.isArray(selectedEvent.categories) ? selectedEvent.categories[0] : selectedEvent.categories) as any)?.title && (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-nova-primary/10 text-nova-primary border border-nova-primary/20">
+                    {((Array.isArray(selectedEvent.categories) ? selectedEvent.categories[0] : selectedEvent.categories) as any).title}
+                  </span>
+                )}
                 <ParticipationBadge type={selectedEvent.participation_type} />
                 {selectedEvent.participation_type === 'team' && selectedEvent.team_size_max && (
                   <span className="badge-individual"><Users size={11} />{selectedEvent.team_size_min}–{selectedEvent.team_size_max} members</span>

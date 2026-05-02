@@ -15,7 +15,7 @@ export default async function MyEventsPage() {
     .from('registrations')
     .select(`
       *,
-      events(*),
+      events(*, categories(title)),
       teams(
         *,
         users!leader_id(id, full_name),
