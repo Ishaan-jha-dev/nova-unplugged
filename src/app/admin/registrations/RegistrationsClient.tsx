@@ -64,7 +64,7 @@ export function RegistrationsClient({
       try {
         const result = await kickUserFromEvent(kickTarget.userId, kickTarget.eventId, forceDissolve)
         setKickTarget(null)
-        if (result.dissolved) alert(`Team was dissolved as member count dropped below minimum.`)
+        if (result.dissolved) alert(`Team was dissolved as the last member was removed.`)
         router.refresh()
       } catch (err: any) {
         if (err.message?.includes('below') || err.message?.includes('dissolve')) {
@@ -291,7 +291,7 @@ export function RegistrationsClient({
             {kickWouldDissolve ? (
               <>
                 <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
-                  ⚠ Removing <strong>{kickTarget.userName}</strong> will drop their team below the minimum size. 
+                  ⚠ Removing <strong>{kickTarget.userName}</strong> will leave their team empty. 
                   Do you want to <strong>dissolve the entire team</strong> (all members unregistered) or cancel?
                 </div>
                 <div className="flex gap-3">
@@ -304,7 +304,7 @@ export function RegistrationsClient({
                 <p className="text-nova-text-dim text-sm">
                   Remove <strong className="text-nova-text">{kickTarget.userName}</strong> from 
                   <strong className="text-nova-text"> {kickTarget.eventTitle}</strong>?
-                  {kickTarget.teamId && <span className="block mt-1 text-xs text-nova-warning">⚠ This may affect their team if it drops below minimum size.</span>}
+                  {kickTarget.teamId && <span className="block mt-1 text-xs text-nova-warning">⚠ If they are the last member, the team will be dissolved.</span>}
                 </p>
                 <div className="flex gap-3">
                   <Button variant="ghost" fullWidth onClick={() => setKickTarget(null)}>Cancel</Button>

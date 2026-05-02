@@ -125,9 +125,8 @@ export async function withdrawFromEvent(eventId: string) {
     const { count: memberCount } = await admin.from('team_members').select('*', { count: 'exact', head: true }).eq('team_id', reg.team_id)
 
     const remainingAfterLeave = (memberCount || 1) - 1
-    if (event?.team_size_min && remainingAfterLeave < event.team_size_min) {
-      // Must dissolve — this is signalled back to client via error with special code
-      // Client should have already confirmed with user before calling this
+    if (remainingAfterLeave === 0) {
+      // Must dissolve since team is empty
       await dissolveTeamInternal(reg.team_id, admin)
       return { dissolved: true }
     }
@@ -181,5 +180,5 @@ export async function checkWithdrawalWouldDissolve(eventId: string, userId: stri
   const { count } = await admin.from('team_members').select('*', { count: 'exact', head: true }).eq('team_id', reg.team_id)
 
   const remaining = (count || 1) - 1
-  return !!(event?.team_size_min && remaining < event.team_size_min)
+  return remaining === 0
 }

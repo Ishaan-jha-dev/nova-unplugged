@@ -45,7 +45,7 @@ export async function kickUserFromEvent(
     const { count } = await admin.from('team_members').select('*', { count: 'exact', head: true }).eq('team_id', reg.team_id)
 
     const remaining = (count || 1) - 1
-    const wouldDissolve = !!(event?.team_size_min && remaining < event.team_size_min)
+    const wouldDissolve = remaining === 0
 
     if (forceDissolve || wouldDissolve) {
       await dissolveTeamInternal(reg.team_id, admin)
@@ -79,7 +79,7 @@ export async function checkKickWouldDissolve(userId: string, eventId: string): P
   const { count } = await admin.from('team_members').select('*', { count: 'exact', head: true }).eq('team_id', reg.team_id)
 
   const remaining = (count || 1) - 1
-  const wouldDissolve = !!(event?.team_size_min && remaining < event.team_size_min)
+  const wouldDissolve = remaining === 0
   return { wouldDissolve, teamId: reg.team_id }
 }
 

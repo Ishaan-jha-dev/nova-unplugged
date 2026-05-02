@@ -329,7 +329,7 @@ export function EventsClient({
           <div className="flex flex-col gap-4">
             {withdrawConfirm.wouldDissolve ? (
               <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
-                ⚠ Leaving will dissolve your team as it will fall below the minimum size. All members will be unregistered. Are you sure?
+                ⚠ Leaving will dissolve your team as you are the last member. Your registration will be removed. Are you sure?
               </div>
             ) : (
               <p className="text-nova-text-dim text-sm">Are you sure you want to withdraw? Your registration will be permanently deleted.</p>
