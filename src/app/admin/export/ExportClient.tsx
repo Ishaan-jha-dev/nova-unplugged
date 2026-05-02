@@ -31,7 +31,7 @@ const exportTypes = [
     color: 'text-nova-primary',
     bg: 'bg-nova-primary/10',
     border: 'border-nova-primary/30',
-    headers: ['full_name', 'email', 'phone', 'college', 'student_id', 'course', 'year', 'payment_status', 'entry_status', 'created_at'],
+    headers: ['full_name', 'email', 'phone', 'student_id', 'course', 'year', 'payment_status', 'entry_status', 'created_at'],
   },
   {
     id: 'registrations',

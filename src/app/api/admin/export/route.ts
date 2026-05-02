@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     if (type === 'users') {
       const { data, error } = await supabaseAdmin
         .from('users')
-        .select('full_name, email, phone, college, student_id, course, year, payment_status, entry_status, created_at')
+        .select('full_name, email, phone, student_id, course, year, payment_status, entry_status, created_at')
         .order('created_at')
       if (error) throw error
       exportData = data || []
