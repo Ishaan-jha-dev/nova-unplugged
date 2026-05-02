@@ -8,8 +8,8 @@ const studentNav = [
   { href: '/dashboard/events',    label: 'Events',     icon: Calendar },
   { href: '/dashboard/my-events', label: 'My Events',  icon: BookMarked },
   { href: '/profile',             label: 'Profile',    icon: User },
-  { href: '/timeline',            label: 'Timeline',   icon: Clock },
-  { href: '/about',               label: 'About',      icon: Info },
+  { href: '/dashboard/timeline',  label: 'Timeline',   icon: Clock },
+  { href: '/dashboard/about',     label: 'About',      icon: Info },
 ]
 
 export default async function StudentLayout({ children }: { children: React.ReactNode }) {
