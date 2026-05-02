@@ -3,10 +3,12 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { formatIST } from '@/lib/utils/dateUtils'
-import { MapPin, Clock, Users, Crown, Copy, Check, ExternalLink, UserMinus, Lock, Unlock } from 'lucide-react'
+import { MapPin, Clock, Users, Crown, Copy, Check, ExternalLink, UserMinus, Lock, Unlock, ChevronUp, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { CategoryBadge, ParticipationBadge } from '@/components/ui/Badge'
+import { Modal } from '@/components/ui/Modal'
 import { createClient } from '@/lib/supabase/client'
+import { respondToJoinRequest } from '@/actions/teamRequests'
 
 interface MyEventsClientProps {
   registrations: any[]
@@ -17,6 +19,30 @@ export function MyEventsClient({ registrations, userId }: MyEventsClientProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
+  const [showLeaderPanel, setShowLeaderPanel] = useState<string | null>(null)
+  const [leaderRequests, setLeaderRequests] = useState<any[]>([])
+  const [loadingRequests, setLoadingRequests] = useState(false)
+  const [requestConfirm, setRequestConfirm] = useState<{ id: string; action: 'accepted' | 'rejected'; name: string } | null>(null)
+
+  const loadLeaderRequests = async (teamId: string) => {
+    setLoadingRequests(true)
+    const supabase = createClient()
+    const { data } = await supabase
+      .from('team_join_requests').select('*, users(full_name, email)').eq('team_id', teamId).eq('status', 'pending')
+    setLeaderRequests(data || [])
+    setLoadingRequests(false)
+  }
+
+  const handleRespondRequest = (requestId: string, action: 'accepted' | 'rejected') => {
+    startTransition(async () => {
+      try {
+        await respondToJoinRequest(requestId, action)
+        setLeaderRequests(prev => prev.filter(r => r.id !== requestId))
+        setRequestConfirm(null)
+        router.refresh()
+      } catch (err: any) { alert(err.message) }
+    })
+  }
 
   const copyCode = (code: string) => {
     navigator.clipboard.writeText(code)
@@ -166,6 +192,38 @@ export function MyEventsClient({ registrations, userId }: MyEventsClientProps) {
                     {!team.is_open && (
                       <p className="text-xs text-nova-muted mt-3 flex items-center gap-1"><Lock size={11} /> Team is closed — not accepting new members</p>
                     )}
+
+                    {isLeader && (
+                      <div className="mt-4 border-t border-white/10 pt-4">
+                        <Button variant="ghost" size="sm" fullWidth icon={showLeaderPanel === team.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                          onClick={() => {
+                            if (showLeaderPanel === team.id) { setShowLeaderPanel(null) }
+                            else { setShowLeaderPanel(team.id); loadLeaderRequests(team.id) }
+                          }}>
+                          Manage Join Requests
+                        </Button>
+                        {showLeaderPanel === team.id && (
+                          <div className="mt-3 bg-black/20 rounded-xl p-4 border border-white/5">
+                            <p className="text-xs text-nova-muted font-medium uppercase tracking-widest mb-3">Pending Join Requests</p>
+                            {loadingRequests ? <p className="text-nova-muted text-sm">Loading...</p> :
+                              leaderRequests.length === 0 ? <p className="text-nova-muted text-sm">No pending requests</p> :
+                              leaderRequests.map(req => (
+                                <div key={req.id} className="flex items-center justify-between p-2 rounded-lg bg-white/5 mb-2 border border-white/10">
+                                  <div>
+                                    <p className="text-nova-text text-sm font-medium">{(req.users as any)?.full_name}</p>
+                                    <p className="text-nova-muted text-xs">{(req.users as any)?.email}</p>
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <Button variant="success" size="sm" onClick={() => setRequestConfirm({ id: req.id, action: 'accepted', name: (req.users as any)?.full_name || 'this user' })}>Accept</Button>
+                                    <Button variant="danger" size="sm" onClick={() => setRequestConfirm({ id: req.id, action: 'rejected', name: (req.users as any)?.full_name || 'this user' })}>Reject</Button>
+                                  </div>
+                                </div>
+                              ))
+                            }
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -173,6 +231,24 @@ export function MyEventsClient({ registrations, userId }: MyEventsClientProps) {
           )
         })}
       </div>
+
+      {/* Join Request Confirm Modal */}
+      <Modal open={!!requestConfirm} onClose={() => setRequestConfirm(null)} size="sm" title={`${requestConfirm?.action === 'accepted' ? 'Accept' : 'Reject'} Request`}>
+        {requestConfirm && (
+          <div className="flex flex-col gap-4">
+            <p className="text-nova-text-dim text-sm">
+              Are you sure you want to {requestConfirm.action} the request from <strong className="text-nova-text">{requestConfirm.name}</strong>? 
+              This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <Button variant="ghost" fullWidth onClick={() => setRequestConfirm(null)}>Cancel</Button>
+              <Button variant={requestConfirm.action === 'accepted' ? 'success' : 'danger'} fullWidth loading={isPending} onClick={() => handleRespondRequest(requestConfirm.id, requestConfirm.action)}>
+                Yes, {requestConfirm.action === 'accepted' ? 'Accept' : 'Reject'}
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }

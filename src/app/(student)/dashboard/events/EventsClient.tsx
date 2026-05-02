@@ -44,9 +44,6 @@ export function EventsClient({
   const [actionError, setActionError] = useState<string | null>(null)
   const [registeredIds, setRegisteredIds] = useState(new Set(registeredEventIds))
   const [withdrawConfirm, setWithdrawConfirm] = useState<{ eventId: string; wouldDissolve: boolean } | null>(null)
-  const [showLeaderPanel, setShowLeaderPanel] = useState<string | null>(null)
-  const [leaderRequests, setLeaderRequests] = useState<any[]>([])
-  const [loadingRequests, setLoadingRequests] = useState(false)
 
   const filtered = useMemo(() => events.filter(e => {
     const matchesTab = tab === 'all' ? true : e.category_id === tab
@@ -139,25 +136,6 @@ export function EventsClient({
         setSelectedEvent(null)
         router.refresh()
       } catch (err: any) { setActionError(err.message) }
-    })
-  }
-
-  const loadLeaderRequests = async (teamId: string) => {
-    setLoadingRequests(true)
-    const supabase = createClient()
-    const { data } = await supabase
-      .from('team_join_requests').select('*, users(full_name, email)').eq('team_id', teamId).eq('status', 'pending')
-    setLeaderRequests(data || [])
-    setLoadingRequests(false)
-  }
-
-  const handleRespondRequest = (requestId: string, action: 'accepted' | 'rejected') => {
-    startTransition(async () => {
-      try {
-        await respondToJoinRequest(requestId, action)
-        setLeaderRequests(prev => prev.filter(r => r.id !== requestId))
-        router.refresh()
-      } catch (err: any) { alert(err.message) }
     })
   }
 
@@ -279,35 +257,6 @@ export function EventsClient({
                   <div className="flex items-center justify-center gap-2 p-4 rounded-xl bg-nova-success/10 border border-nova-success/30 text-nova-success font-semibold">
                     <Check size={18} /> Already Registered
                   </div>
-                  {myTeamId && (
-                    <Button variant="ghost" size="sm" fullWidth icon={showLeaderPanel === myTeamId ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                      onClick={() => {
-                        if (showLeaderPanel === myTeamId) { setShowLeaderPanel(null) }
-                        else { setShowLeaderPanel(myTeamId); loadLeaderRequests(myTeamId) }
-                      }}>
-                      Manage Join Requests
-                    </Button>
-                  )}
-                  {showLeaderPanel === myTeamId && (
-                    <div className="glass rounded-xl p-4 border border-nova-primary/20">
-                      <p className="text-xs text-nova-muted font-medium uppercase tracking-widest mb-3">Pending Join Requests</p>
-                      {loadingRequests ? <p className="text-nova-muted text-sm">Loading...</p> :
-                        leaderRequests.length === 0 ? <p className="text-nova-muted text-sm">No pending requests</p> :
-                        leaderRequests.map(req => (
-                          <div key={req.id} className="flex items-center justify-between p-2 rounded-lg bg-white/5 mb-2">
-                            <div>
-                              <p className="text-nova-text text-sm">{(req.users as any)?.full_name}</p>
-                              <p className="text-nova-muted text-xs">{(req.users as any)?.email}</p>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button variant="success" size="sm" loading={isPending} onClick={() => handleRespondRequest(req.id, 'accepted')}>Accept</Button>
-                              <Button variant="danger" size="sm" loading={isPending} onClick={() => handleRespondRequest(req.id, 'rejected')}>Reject</Button>
-                            </div>
-                          </div>
-                        ))
-                      }
-                    </div>
-                  )}
                   <Button variant="ghost" size="sm" fullWidth className="text-red-400 hover:bg-red-500/10" icon={<LogOut size={14} />} loading={isPending} onClick={() => handleWithdrawClick(selectedEvent.id)}>
                     Withdraw from Event
                   </Button>
