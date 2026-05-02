@@ -14,21 +14,48 @@ export default async function AdminDashboard() {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { cookies: { getAll() { return [] }, setAll() {} } }
+  )
+
   const [
     { count: totalUsers },
     { count: pendingPayments },
     { count: scannedToday },
     { count: totalEvents },
-    { data: recentPayments },
-    { data: recentScans },
+    { data: rawRecentPayments },
+    { data: rawRecentScans },
   ] = await Promise.all([
-    supabase.from('users').select('*', { count: 'exact', head: true }),
-    supabase.from('payment_submissions').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-    supabase.from('scanner_log').select('*', { count: 'exact', head: true }).gte('scanned_at', today.toISOString()).eq('scan_result', 'valid'),
-    supabase.from('events').select('*', { count: 'exact', head: true }).eq('is_active', true),
-    supabase.from('payment_submissions').select('*, users(full_name, email)').order('created_at', { ascending: false }).limit(8),
-    supabase.from('scanner_log').select('*, users!scanned_by(full_name)').order('scanned_at', { ascending: false }).limit(5),
+    supabaseAdmin.from('users').select('*', { count: 'exact', head: true }),
+    supabaseAdmin.from('payment_submissions').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+    supabaseAdmin.from('scanner_log').select('*', { count: 'exact', head: true }).gte('scanned_at', today.toISOString()).eq('scan_result', 'valid'),
+    supabaseAdmin.from('events').select('*', { count: 'exact', head: true }).eq('is_active', true),
+    supabaseAdmin.from('payment_submissions').select('*').order('created_at', { ascending: false }).limit(8),
+    supabaseAdmin.from('scanner_log').select('*').order('scanned_at', { ascending: false }).limit(5),
   ])
+
+  // Manually map user names to avoid "multiple relationship" embedding errors
+  const userIds = new Set<string>()
+  rawRecentPayments?.forEach(p => { if (p.user_id) userIds.add(p.user_id) })
+  rawRecentScans?.forEach(s => { if (s.scanned_by) userIds.add(s.scanned_by) })
+
+  const userNames: Record<string, { full_name: string; email: string }> = {}
+  if (userIds.size > 0) {
+    const { data: usersData } = await supabaseAdmin.from('users').select('id, full_name, email').in('id', Array.from(userIds))
+    usersData?.forEach(u => { userNames[u.id] = { full_name: u.full_name, email: u.email } })
+  }
+
+  const recentPayments = (rawRecentPayments || []).map(p => ({
+    ...p,
+    users: userNames[p.user_id] || { full_name: 'Unknown', email: '' }
+  }))
+
+  const recentScans = (rawRecentScans || []).map(s => ({
+    ...s,
+    users: userNames[s.scanned_by] || { full_name: 'Unknown', email: '' }
+  }))
 
   const stats = [
     { label: 'Total Users',       value: totalUsers || 0,    icon: Users,     color: 'text-nova-primary', bg: 'bg-nova-primary/10', border: 'border-nova-primary/20' },
