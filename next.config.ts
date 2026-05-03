@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
@@ -10,6 +11,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Vercel Build Trigger: v1.0.1
   // Suppress the html5-qrcode warning about using browser APIs
   webpack: (config, { isServer }) => {
     if (isServer) {
