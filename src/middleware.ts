@@ -52,6 +52,11 @@ async function getRoleFromDB(request: NextRequest, userId: string) {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+  const redirect = (path: string) => {
+    const url = request.nextUrl.clone()
+    url.pathname = path
+    return NextResponse.redirect(url)
+  }
   let response = NextResponse.next({ request })
 
   // Skip middleware for static assets
@@ -82,15 +87,13 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // Verify session — getUser() is the secure way (validates with Supabase servers)
+  // Verify session — getUser() is the secure way
   const { data: { user } } = await supabase.auth.getUser()
 
   // No session → allow public, redirect others to login
   if (!user) {
     if (isPublicRoute(pathname)) return response
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
+    return redirect('/login')
   }
 
   // ─── PERMAFIX: Always query DB for role using Service Role key ────────────
@@ -99,11 +102,6 @@ export async function middleware(request: NextRequest) {
   // DIAGNOSTIC LOG — check your terminal to see these values
   console.log(`[MIDDLEWARE] user=${user.email} path=${pathname} roleLevel=${roleLevel} paymentStatus=${paymentStatus} serviceKey=${process.env.SUPABASE_SERVICE_ROLE_KEY?.slice(0, 20)}...`)
 
-  const redirect = (path: string) => {
-    const url = request.nextUrl.clone()
-    url.pathname = path
-    return NextResponse.redirect(url)
-  }
 
   // Login/Register Lockout for authenticated users
   if (pathname === '/login' || pathname === '/register') {
@@ -126,7 +124,6 @@ export async function middleware(request: NextRequest) {
 
   // ─── Level 2: Volunteer — scanner only ───────────────────────────────────
   if (roleLevel === 2) {
-    if (pathname === '/') return redirect('/dashboard')
     if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/scanner')) {
       return redirect('/admin/scanner')
     }
@@ -135,9 +132,6 @@ export async function middleware(request: NextRequest) {
 
   // ─── Level 1: Student — payment gate ─────────────────────────────────────
   // Redirect base URL to dashboard for regular users
-  if (pathname === '/') {
-    return redirect('/dashboard')
-  }
 
   if (paymentStatus !== 'approved') {
     if (!pathname.startsWith('/payment')) return redirect('/payment')

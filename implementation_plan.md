@@ -1,29 +1,34 @@
-# Final Implementation Report - Nova Unplugged Refinement
+# Implementation Plan - Nova Unplugged Refinement
 
-All planned tasks have been successfully executed, tested, and pushed to the production environment.
+## Phase 1: Core Dashboard & Reliability [COMPLETED]
+- **Admin Dashboard Reliability**: Service Role Integration and relationship resolution for KPI counters.
+- **IST Standardization**: Global rollout of `formatIST` utility for all timestamps.
+- **Professional UX**: Integrated Timeline/About Us views and Sidebar persistence.
 
-## Completed Changes
+## Phase 2: Data Display & Team Management [COMPLETED]
+- **Dynamic Category Overhaul**:
+    - Replaced static string categories with a relational `categories` table.
+    - Updated `EventsClient`, `MyEventsClient`, and `Dashboard` to support dynamic category joins.
+- **Team Join Request System**:
+    - Implemented `team_join_requests` table with pending/accepted/rejected status.
+    - Restricted request management (Accept/Reject) strictly to the **Team Leader**.
+    - Moved join request management to the **My Events** page for better UX.
+    - Added confirmation modals for accepting/rejecting requests.
+- **RLS & Visibility**:
+    - Implemented public profile visibility policy to allow team leaders to see applicants' names/emails.
+- **Team Stability Logic**:
+    - Removed automatic dissolution when dropping below minimum size.
+    - **Leadership Transfer**: Automated promotion of the next oldest member if a leader withdraws or is kicked.
+    - **0-Member Dissolution**: Teams only dissolve automatically when the last member is removed.
 
-### 1. Admin Dashboard Reliability [COMPLETED]
-- **Service Role Integration**: Replaced RLS-restricted queries with a secure `supabaseAdmin` client in `src/app/admin/page.tsx`.
-- **Relationship Resolution**: Fixed the "multiple relationships found" error by manually mapping `full_name` to user IDs in recent payments and scanner logs.
-- **Accuracy**: Verified that all KPI counters (Total Users, Pending Payments, etc.) now reflect the true database state.
+## Phase 3: Final Polish & Deployment [IN PROGRESS]
+- [x] Escape ESLint entities in Categories admin panel.
+- [x] Fix "Unknown Date" and "Blank Category" display issues.
+- [x] Add "Leader" badge to Admin Registrations view.
+- [ ] Final production smoke test.
 
-### 2. Global IST Timezone Standardization [COMPLETED]
-- **Utility Creation**: Created `src/lib/utils/dateUtils.ts` using `date-fns-tz`.
-- **Global Rollout**: Replaced standard formatting with `formatIST` in 12+ files, ensuring every timestamp on the platform is rendered in `Asia/Kolkata` time.
-- **Consistency**: Verified across Admin scanner logs, Payment history, and Student event schedules.
-
-### 3. Professional Dashboard Integration [COMPLETED]
-- **Sidebar Persistence**: Created dashboard-integrated views for "Timeline" and "About Us".
-- **Code Optimization**: Refactored the timeline into `src/components/sections/TimelineView.tsx` as a single source of truth.
-- **Conditional UI**: Implemented logic to hide the public "Register" CTA when viewed within the authenticated dashboard.
-
-### 4. Admin Scanner Enhancements [COMPLETED]
-- **Bulk Reset**: Implemented "Reset All Scans" to move users back to `approved` status.
-- **Secure Logging**: Moved scanner logging to a server-side route to bypass permission blocks.
-
-## Verification Results
-- **Build**: Successfully compiled and deployed to Vercel (fix for `createServerClient` arguments applied).
-- **Timezone**: Confirmed logs show Indian Standard Time (+5:30).
-- **UX**: Confirmed sidebar remains visible when navigating to Timeline/About.
+## Verification Checklist
+- [x] Category badges show titles correctly (handling Supabase join arrays).
+- [x] Team leader can see names in Join Requests panel.
+- [x] Withdrawing as leader transfers leadership correctly.
+- [x] Dates show "Date TBD" or "IST String" instead of "Unknown".

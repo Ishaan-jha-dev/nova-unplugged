@@ -27,6 +27,15 @@ export default function LoginPage() {
       setError('Please enter both email and password.')
       return
     }
+
+    // DEMO BYPASS
+    if (email === 'test' && password === 'test') {
+      document.cookie = "demo_bypass=true; path=/; max-age=3600"
+      router.push('/dashboard')
+      router.refresh()
+      return
+    }
+
     setError(null)
     startTransition(async () => {
       const supabase = createClient()
@@ -93,14 +102,14 @@ export default function LoginPage() {
 
       <div className="relative z-10 w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-nova-primary/20 border border-nova-primary/40 flex items-center justify-center mx-auto mb-4 shadow-glow-sm">
+          <div className="w-16 h-16 rounded-2xl bg-nova-primary/20 border border-nova-primary/40 flex items-center justify-center mx-auto mb-4 shadow-[0_0_20px_rgba(255,51,102,0.4)]">
             <Lock size={28} className="text-nova-primary" />
           </div>
-          <h1 className="font-display font-bold text-3xl gradient-text mb-2">Welcome Back</h1>
-          <p className="text-nova-text-dim text-sm">Login to your Nova account</p>
+          <h1 className="font-display font-bold text-3xl text-white mb-2">Welcome Back</h1>
+          <p className="text-nova-text-dim text-sm">Login to your <span className="text-[#FBBF24]">Nova</span> account</p>
         </div>
 
-        <div className="glass-dark rounded-2xl p-8 border border-nova-primary/30 shadow-2xl">
+        <div className="glass-dark rounded-3xl p-8 border border-white/10 shadow-2xl">
           {error && (
             <div className={`mb-5 p-3 rounded-lg border text-sm flex items-center gap-2 ${
               error.includes('successfully') ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-red-500/10 border-red-500/30 text-red-400'
